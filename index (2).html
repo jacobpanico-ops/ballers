@@ -779,6 +779,33 @@ select.inp { cursor: pointer; }
   </div>
 </div>
 
+<!-- SHIRT SIZE MODAL -->
+<div class="modal" id="shirt-size-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="shirt-size-modal-title">👕 You Earned a Reward!</div>
+    <div class="modal-sub" id="shirt-size-modal-sub">Enter your shirt size so coach can order it for you.</div>
+    <div class="modal-row">
+      <label class="modal-lbl">Shirt Size</label>
+      <select class="inp" id="shirt-size-sel">
+        <option value="">— Select your size —</option>
+        <option value="YS">Youth Small (YS)</option>
+        <option value="YM">Youth Medium (YM)</option>
+        <option value="YL">Youth Large (YL)</option>
+        <option value="S">Small (S)</option>
+        <option value="M">Medium (M)</option>
+        <option value="L">Large (L)</option>
+        <option value="XL">XL</option>
+        <option value="2XL">2XL</option>
+        <option value="3XL">3XL</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-dim btn-sm" style="flex:1" id="shirt-size-skip-btn">Skip</button>
+      <button class="btn btn-sm" style="flex:1" id="shirt-size-submit-btn">Submit Size 👕</button>
+    </div>
+  </div>
+</div>
+
 <!-- AWARD BONUS MODAL -->
 <div class="modal" id="award-bonus-modal">
   <div class="modal-box">
@@ -1053,6 +1080,10 @@ function wireEvents(){
   // Award bonus modal
   document.getElementById('award-cancel-btn').addEventListener('click', function(){ closeModal('award-bonus-modal'); });
   document.getElementById('award-save-btn').addEventListener('click', saveAwardBonus);
+
+  // Shirt size modal
+  document.getElementById('shirt-size-skip-btn').addEventListener('click', function(){ closeModal('shirt-size-modal'); });
+  document.getElementById('shirt-size-submit-btn').addEventListener('click', submitShirtSize);
 
   // Click-outside to close modals
   document.querySelectorAll('.modal').forEach(function(m){
@@ -1814,7 +1845,23 @@ function showSplash(name, ptsEarned){
   document.getElementById('sp-rlabel').textContent = np?nxt.i+' '+nxt.n:'🏆 All tiers!';
   document.getElementById('sp-rval').textContent = np?tp+' / '+np:tp+' pts';
   var rb = document.getElementById('sp-reward');
-  if(je) rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
+  if(je) {
+    rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
+    // If the reward is a T-shirt or Hoodie, prompt for shirt size
+    var isShirt = je.n.toLowerCase().indexOf('shirt') >= 0 || je.n.toLowerCase().indexOf('tee') >= 0;
+    var isHoodie = je.n.toLowerCase().indexOf('hoodie') >= 0;
+    if(isShirt || isHoodie) {
+      var modalTitle = isHoodie ? '🏅 You Earned a Hoodie!' : '👕 You Earned a T-Shirt!';
+      var modalSub = 'Enter your shirt size so coach can order it for you. This will be emailed to Coach automatically.';
+      document.getElementById('shirt-size-modal-title').textContent = modalTitle;
+      document.getElementById('shirt-size-modal-sub').textContent = modalSub;
+      document.getElementById('shirt-size-sel').value = '';
+      // Store award info for email
+      window._pendingAward = { name: name, reward: je.n, emoji: je.i };
+      // Delay so splash renders first
+      setTimeout(function(){ openModal('shirt-size-modal'); }, 600);
+    }
+  }
   else if(np) rb.innerHTML='<div class="spnr"><div class="ri">'+nxt.i+'</div><div class="rn">'+nxt.n+'</div><div class="rp">'+(np-tp)+' pts to unlock'+(nxt.d?' · '+nxt.d:'')+'</div></div>';
   else if(splashGrp==='hs') rb.innerHTML='<div class="spnr"><div class="ri">💟</div><div class="rn">Custom Shoes Contender</div><div class="rp">Top HS earner wins! · awarded Oct 31</div></div>';
   else rb.innerHTML='<div class="spnr"><div class="ri">🏅</div><div class="rn">All rewards unlocked!</div><div class="rp">Keep grinding — stay on top of the board.</div></div>';
@@ -1946,6 +1993,41 @@ async function saveAwardBonus(){
   toast('🏆 '+pts+' bonus pts awarded to '+name+'!');
 }
 
+
+// ════════════════════════════════════════
+// SHIRT SIZE & AWARD EMAIL
+// ════════════════════════════════════════
+function submitShirtSize(){
+  var size = document.getElementById('shirt-size-sel').value;
+  if(!size){ toast('Please select a shirt size!'); return; }
+  var award = window._pendingAward || {};
+  var p = pLoad();
+  var playerName = (p && p.name) ? p.name : (award.name || 'Unknown');
+  var playerEmail = (p && p.email) ? p.email : '';
+  sendAwardEmail(playerName, playerEmail, award.reward || 'Reward', award.emoji || '🎽', size);
+  closeModal('shirt-size-modal');
+  toast('Size submitted! Coach has been notified 📧');
+  window._pendingAward = null;
+}
+
+function sendAwardEmail(playerName, playerEmail, rewardName, rewardEmoji, shirtSize){
+  var subject = encodeURIComponent(rewardEmoji + ' Award Earned: ' + rewardName + ' — ' + playerName);
+  var body = encodeURIComponent(
+    'A player just unlocked a reward!\n\n' +
+    'Player: ' + playerName + '\n' +
+    'Player Email: ' + (playerEmail || 'not provided') + '\n' +
+    'Award: ' + rewardName + '\n' +
+    'Shirt Size: ' + shirtSize + '\n' +
+    'Date: ' + new Date().toLocaleDateString() + '\n\n' +
+    '— Hoop N\' Hustle App'
+  );
+  var link = document.createElement('a');
+  link.href = 'mailto:jacob.panico@centrallocal.org?subject=' + subject + '&body=' + body;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
