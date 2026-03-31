@@ -31,9 +31,9 @@
   --text: #F5F0E8;
   --text-dim: #A09880;
   --text-muted: #5A5248;
-  --green: #22C55E;
-  --red: #EF4444;
-  --blue: #3B82F6;
+  --green: #AAAAAA;
+  --red: #888888;
+  --blue: #FFCB05;
   --font-display: 'Barlow Condensed', sans-serif;
   --font-body: 'Barlow', sans-serif;
   --radius: 10px;
@@ -210,8 +210,8 @@ select.inp { cursor: pointer; }
 .ap { font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.5px; }
 .ack { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 11px; color: var(--black); font-weight: 900; }
 .ab.on .ack { display: flex; }
-.ab.bonus-active { border-color: rgba(59,130,246,0.6); background: rgba(59,130,246,0.08); }
-.ab.bonus-active .ap { color: #60A5FA; }
+.ab.bonus-active { border-color: rgba(255,203,5,0.6); background: rgba(255,203,5,0.08); }
+.ab.bonus-active .ap { color: var(--gold-bright); }
 
 /* ═══ COUNTER ROW ═══ */
 .cr { display: flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; }
@@ -244,9 +244,9 @@ select.inp { cursor: pointer; }
 .btn:active { transform: scale(0.98); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-dim { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--gold-border); box-shadow: none; }
-.btn-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.4); box-shadow: none; }
-.btn-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.4); box-shadow: none; }
-.btn-blue { background: rgba(59,130,246,0.1); color: #60A5FA; border: 1px solid rgba(59,130,246,0.4); box-shadow: none; }
+.btn-red { background: rgba(90,82,72,0.2); color: var(--text-muted); border: 1px solid rgba(90,82,72,0.4); box-shadow: none; }
+.btn-green { background: rgba(255,203,5,0.08); color: var(--gold); border: 1px solid var(--gold-border); box-shadow: none; }
+.btn-blue { background: rgba(255,203,5,0.08); color: var(--gold); border: 1px solid var(--gold-border); box-shadow: none; }
 .btn-sm { padding: 10px 16px; font-size: 13px; letter-spacing: 2px; }
 
 /* ═══ SHIMMER BAR ═══ */
@@ -254,8 +254,8 @@ select.inp { cursor: pointer; }
 @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
 
 /* ═══ DATE MESSAGES ═══ */
-.date-locked { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 13px; font-size: 12px; color: var(--red); font-weight: 700; margin-top: 8px; display: none; }
-.date-ok { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 13px; font-size: 12px; color: var(--green); font-weight: 700; margin-top: 8px; display: none; }
+.date-locked { background: rgba(90,82,72,0.15); border: 1px solid rgba(90,82,72,0.4); border-radius: 8px; padding: 10px 13px; font-size: 12px; color: var(--text-muted); font-weight: 700; margin-top: 8px; display: none; }
+.date-ok { background: rgba(255,203,5,0.07); border: 1px solid var(--gold-border); border-radius: 8px; padding: 10px 13px; font-size: 12px; color: var(--gold); font-weight: 700; margin-top: 8px; display: none; }
 
 /* ═══ STATS PAGE ═══ */
 .sh {
@@ -274,7 +274,7 @@ select.inp { cursor: pointer; }
 .tb { display: inline-block; padding: 4px 14px; border-radius: 20px; font-family: var(--font-display); font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
 .t0 { background: rgba(90,82,72,0.3); color: var(--text-muted); }
 .t1 { background: rgba(200,150,12,0.15); color: var(--gold); border: 1px solid var(--gold-dim); }
-.t2 { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.4); }
+.t2 { background: rgba(90,82,72,0.25); color: var(--text-dim); border: 1px solid rgba(90,82,72,0.4); }
 .t3 { background: rgba(200,150,12,0.25); color: var(--gold-bright); border: 1px solid var(--gold); }
 .t4 { background: linear-gradient(90deg, rgba(200,150,12,0.3), rgba(240,180,41,0.3)); color: var(--gold-glow); border: 1px solid var(--gold-bright); box-shadow: 0 0 14px rgba(255,180,0,0.25); }
 
@@ -381,7 +381,7 @@ select.inp { cursor: pointer; }
   background: linear-gradient(90deg, transparent, rgba(210,210,225,0.45), rgba(230,230,245,0.6), rgba(210,210,225,0.45), transparent);
 }
 .lbrow.r2 .lbr { color: #C8C8D8; font-size: 26px; filter: drop-shadow(0 0 6px rgba(200,200,220,0.5)); }
-.lbrow.r2 .lbn { color: #D8D8E8; }
+.lbrow.r2 .lbn { color: #C8C8C8; }
 .lbrow.r2 .lbp { color: #C8C8D8; font-size: 28px; }
 
 /* ══════════════════════════════════
@@ -399,7 +399,7 @@ select.inp { cursor: pointer; }
   background: linear-gradient(90deg, transparent, rgba(210,150,80,0.4), rgba(230,170,100,0.55), rgba(210,150,80,0.4), transparent);
 }
 .lbrow.r3 .lbr { color: #D4956A; font-size: 24px; filter: drop-shadow(0 0 5px rgba(200,130,60,0.45)); }
-.lbrow.r3 .lbn { color: #E0A880; }
+.lbrow.r3 .lbn { color: var(--gold-dim); }
 .lbrow.r3 .lbp { color: #D4956A; font-size: 26px; }
 .lbn { font-family: var(--font-display); font-size: 17px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 0.5px; }
 .lbi { text-align: right; }
@@ -412,16 +412,16 @@ select.inp { cursor: pointer; }
 .ct2 td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
 .ct2 tr:last-child td { border: none; }
 .ct2 tr:hover td { background: rgba(200,150,12,0.04); }
-.del-btn { background: none; border: 1px solid rgba(239,68,68,0.35); color: var(--red); border-radius: 6px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: var(--font-display); text-transform: uppercase; }
+.del-btn { background: none; border: 1px solid rgba(90,82,72,0.4); color: var(--text-muted); border-radius: 6px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: var(--font-display); text-transform: uppercase; }
 .edit-btn { background: none; border: 1px solid var(--gold-border); color: var(--gold); border-radius: 6px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: var(--font-display); text-transform: uppercase; margin-right: 4px; }
 .pm-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 8px; margin-bottom: 6px; }
 .pm-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 0.5px; }
 .pm-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
 /* ═══ ANNOUNCE ═══ */
-.announce-banner { background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); border: 1px solid rgba(59,130,246,0.35); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px; }
+.announce-banner { background: linear-gradient(135deg, rgba(255,203,5,0.12), rgba(255,203,5,0.04)); border: 1px solid var(--gold-border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px; }
 .announce-icon { font-size: 20px; flex-shrink: 0; }
-.announce-title { font-family: var(--font-display); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #60A5FA; margin-bottom: 2px; }
+.announce-title { font-family: var(--font-display); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 2px; }
 .announce-body { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
 
 /* ═══ DAILY FEED ═══ */
@@ -434,9 +434,9 @@ select.inp { cursor: pointer; }
 .feed-act { font-size: 11px; color: var(--text-muted); }
 
 /* ═══ BONUS BADGE ═══ */
-.bonus-badge { background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); border: 1px solid rgba(59,130,246,0.35); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.bonus-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; font-style: italic; color: #60A5FA; text-transform: uppercase; }
-.bonus-multi { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: #60A5FA; }
+.bonus-badge { background: linear-gradient(135deg, rgba(255,203,5,0.12), rgba(255,203,5,0.04)); border: 1px solid var(--gold-border); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.bonus-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; font-style: italic; color: var(--gold); text-transform: uppercase; }
+.bonus-multi { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold); }
 
 /* ═══ SPLASH ═══ */
 .sp { position: fixed; inset: 0; background: rgba(2,2,2,0.97); z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -548,8 +548,8 @@ select.inp { cursor: pointer; }
 .grp-row.me .grp-rank { color: var(--gold-bright); }
 .grp-row.r1 { background: linear-gradient(135deg, rgba(200,150,12,0.14), rgba(200,150,12,0.04)); border-color: var(--gold-border-strong); }
 .grp-row.r1 .grp-rank { color: var(--gold-bright); }
-.grp-row.r2 .grp-rank { color: #B0A090; }
-.grp-row.r3 .grp-rank { color: #C08050; }
+.grp-row.r2 .grp-rank { color: #C8C8C8; }
+.grp-row.r3 .grp-rank { color: var(--gold-dim); }
 .grp-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; font-style: italic; text-transform: uppercase; flex: 1; padding: 0 8px; }
 .grp-pts { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold-bright); font-style: italic; }
 .grp-row.me .grp-pts { color: var(--gold-glow); }
@@ -557,17 +557,17 @@ select.inp { cursor: pointer; }
 
 /* ═══ GROUP BADGES ═══ */
 .grp-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: var(--font-display); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-.grp-hs  { background: rgba(240,180,41,0.15); color: var(--gold-bright); border: 1px solid rgba(240,180,41,0.35); }
-.grp-jh  { background: rgba(34,197,94,0.12);  color: #4ADE80;            border: 1px solid rgba(34,197,94,0.3); }
-.grp-yth { background: rgba(59,130,246,0.12); color: #60A5FA;            border: 1px solid rgba(59,130,246,0.3); }
+.grp-hs  { background: rgba(255,203,5,0.15);  color: var(--gold-bright); border: 1px solid rgba(255,203,5,0.35); }
+.grp-jh  { background: rgba(200,200,200,0.12); color: #C8C8C8;           border: 1px solid rgba(200,200,200,0.3); }
+.grp-yth { background: rgba(160,160,160,0.12); color: #AAAAAA;           border: 1px solid rgba(160,160,160,0.3); }
 
 /* ═══ GROUP FILTER TABS ═══ */
 .gf { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
 .gft { flex: 1; min-width: 60px; padding: 9px 6px; background: var(--surface); border: 1px solid var(--gold-border); border-radius: 8px; font-family: var(--font-display); font-size: 12px; font-weight: 700; font-style: italic; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; text-align: center; transition: all 0.2s; }
 .gft.on     { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); border-color: var(--gold-bright); }
-.gft.on-hs  { background: rgba(240,180,41,0.2);  color: var(--gold-bright); border-color: rgba(240,180,41,0.5); }
-.gft.on-jh  { background: rgba(34,197,94,0.15);  color: #4ADE80;            border-color: rgba(34,197,94,0.4); }
-.gft.on-yth { background: rgba(59,130,246,0.15); color: #60A5FA;            border-color: rgba(59,130,246,0.4); }
+.gft.on-hs  { background: rgba(255,203,5,0.2);   color: var(--gold-bright); border-color: rgba(255,203,5,0.5); }
+.gft.on-jh  { background: rgba(200,200,200,0.15); color: #C8C8C8;           border-color: rgba(200,200,200,0.4); }
+.gft.on-yth { background: rgba(160,160,160,0.15); color: #AAAAAA;           border-color: rgba(160,160,160,0.4); }
 
 /* ═══ MY ROW HIGHLIGHT ═══ */
 .lbrow-me { background: linear-gradient(135deg, rgba(200,150,12,0.18), rgba(200,150,12,0.06)) !important; border-color: var(--gold-bright) !important; box-shadow: 0 0 20px rgba(255,140,0,0.14) !important; }
@@ -705,6 +705,7 @@ select.inp { cursor: pointer; }
 </nav>
 
 <div class="toast" id="toast"></div>
+<div id="save-status" style="display:none;position:fixed;top:10px;right:10px;z-index:9999;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(20,20,20,0.95);border:1px solid rgba(255,203,5,0.3);color:var(--gold);transition:all 0.3s;"></div>
 
 <!-- SPLASH -->
 <div class="sp" id="splash">
@@ -779,6 +780,33 @@ select.inp { cursor: pointer; }
   </div>
 </div>
 
+<!-- SHIRT SIZE MODAL -->
+<div class="modal" id="shirt-size-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="shirt-size-modal-title">👕 You Earned a Reward!</div>
+    <div class="modal-sub" id="shirt-size-modal-sub">Enter your shirt size so coach can order it for you.</div>
+    <div class="modal-row">
+      <label class="modal-lbl">Shirt Size</label>
+      <select class="inp" id="shirt-size-sel">
+        <option value="">— Select your size —</option>
+        <option value="YS">Youth Small (YS)</option>
+        <option value="YM">Youth Medium (YM)</option>
+        <option value="YL">Youth Large (YL)</option>
+        <option value="S">Small (S)</option>
+        <option value="M">Medium (M)</option>
+        <option value="L">Large (L)</option>
+        <option value="XL">XL</option>
+        <option value="2XL">2XL</option>
+        <option value="3XL">3XL</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-dim btn-sm" style="flex:1" id="shirt-size-skip-btn">Skip</button>
+      <button class="btn btn-sm" style="flex:1" id="shirt-size-submit-btn">Submit Size 👕</button>
+    </div>
+  </div>
+</div>
+
 <!-- AWARD BONUS MODAL -->
 <div class="modal" id="award-bonus-modal">
   <div class="modal-box">
@@ -811,6 +839,7 @@ select.inp { cursor: pointer; }
     <div class="si-tagline">Fairview Apaches</div>
     <div class="si-tabs">
       <button class="si-tab on" id="si-tp">Player</button>
+      <button class="si-tab" id="si-tpar">Parent</button>
       <button class="si-tab" id="si-tc">Coach</button>
     </div>
     <div class="si-form" id="si-pf">
@@ -830,6 +859,14 @@ select.inp { cursor: pointer; }
       </div>
       <button class="si-go-btn" id="si-go">Let's Go 🏀</button>
       <div class="si-err" id="si-perr"></div>
+    </div>
+    <div class="si-form" id="si-parf" style="display:none">
+      <div class="si-title">Parent View 👀</div>
+      <div class="si-desc">Enter your player's email to follow their progress. View-only — no logging or editing.</div>
+      <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-parfn" type="text" autocomplete="given-name" autocorrect="off" placeholder="Jane Johnson"></div>
+      <div class="si-row"><label class="si-lbl">Player's Email</label><input class="si-inp" id="si-parem" type="email" autocomplete="off" placeholder="marcus@email.com"></div>
+      <button class="si-go-btn" id="si-pargo">View My Player 🏀</button>
+      <div class="si-err" id="si-parerr"></div>
     </div>
     <div class="si-form" id="si-cf" style="display:none">
       <div class="si-title">Coach Access</div>
@@ -874,12 +911,10 @@ var REWARDS_BY_GROUP = {
   yth: [
     {p:100,   i:'👕', n:'FV Basketball T-Shirt',           d:'by May 31'},
     {p:350,   i:'🏅', n:"Hoop N'Hustle Hoodie",            d:'awarded Oct 31'},
-    {p:99999, i:'💟', n:'Custom Team Shoes',               d:'awarded Oct 31'},
   ],
   jh: [
     {p:100,   i:'👕', n:'FV Basketball T-Shirt',           d:'by May 31'},
     {p:500,   i:'🏅', n:"Hoop N'Hustle Hoodie",            d:'awarded Oct 31'},
-    {p:99999, i:'💟', n:'Custom Team Shoes',               d:'awarded Oct 31'},
   ],
   hs: [
     {p:100,   i:'👕', n:'FV Basketball T-Shirt',           d:'by May 31'},
@@ -973,6 +1008,7 @@ window.addEventListener('load', function(){
   if(p){
     document.getElementById('si').style.display = 'none';
     if(p.isCoach){ enterCoachMode(p.name); }
+    else if(p.isParent){ applyParent(p); }
     else { applyPlayer(p); }
   }
 
@@ -983,6 +1019,10 @@ window.addEventListener('load', function(){
     renderLb();
     if(coachOn) renderCoach();
     hideLb();
+    // Check for Sunday weekly backup reminder
+    checkWeeklyBackup();
+    // Flush any pending writes that survived a prior session
+    flushPending();
   });
 
   // Warm up the Supabase connection so first insert is never cold
@@ -1010,10 +1050,12 @@ function wireEvents(){
 
   // Sign-in tabs
   document.getElementById('si-tp').addEventListener('click', function(){ siSwitch('player'); });
+  document.getElementById('si-tpar').addEventListener('click', function(){ siSwitch('parent'); });
   document.getElementById('si-tc').addEventListener('click', function(){ siSwitch('coach'); });
 
   // Sign-in buttons
   document.getElementById('si-go').addEventListener('click', doSignIn);
+  document.getElementById('si-pargo').addEventListener('click', doParentIn);
   document.getElementById('si-cgo').addEventListener('click', doCoachIn);
 
   // Sign out
@@ -1056,6 +1098,10 @@ function wireEvents(){
   document.getElementById('award-cancel-btn').addEventListener('click', function(){ closeModal('award-bonus-modal'); });
   document.getElementById('award-save-btn').addEventListener('click', saveAwardBonus);
 
+  // Shirt size modal
+  document.getElementById('shirt-size-skip-btn').addEventListener('click', function(){ closeModal('shirt-size-modal'); });
+  document.getElementById('shirt-size-submit-btn').addEventListener('click', submitShirtSize);
+
   // Click-outside to close modals
   document.querySelectorAll('.modal').forEach(function(m){
     m.addEventListener('click', function(e){ if(e.target===m) closeModal(m.id); });
@@ -1063,6 +1109,7 @@ function wireEvents(){
 
   // Enter key on sign-in
   document.getElementById('si-em').addEventListener('keydown', function(e){ if(e.key==='Enter') doSignIn(); });
+  document.getElementById('si-parem').addEventListener('keydown', function(e){ if(e.key==='Enter') doParentIn(); });
   document.getElementById('si-cp').addEventListener('keydown', function(e){ if(e.key==='Enter') doCoachIn(); });
 }
 
@@ -1116,11 +1163,92 @@ function setupDate(){
 }
 
 // ════════════════════════════════════════
-// FETCH
+// SAVE STATUS UI
+// ════════════════════════════════════════
+var _saveTimer = null;
+function showSaveStatus(state, msg){
+  var el = document.getElementById('save-status');
+  if(!el) return;
+  clearTimeout(_saveTimer);
+  el.style.display = 'block';
+  if(state === 'saving'){
+    el.style.borderColor = 'rgba(255,203,5,0.5)';
+    el.style.color = 'var(--gold)';
+    el.textContent = msg || '⏳ Saving...';
+  } else if(state === 'saved'){
+    el.style.borderColor = 'rgba(80,200,80,0.5)';
+    el.style.color = '#5cc85c';
+    el.textContent = msg || '✓ Saved';
+    _saveTimer = setTimeout(function(){ el.style.display='none'; }, 2500);
+  } else if(state === 'error'){
+    el.style.borderColor = 'rgba(255,80,80,0.5)';
+    el.style.color = '#ff5050';
+    el.textContent = msg || '⚠ Save Failed';
+    _saveTimer = setTimeout(function(){ el.style.display='none'; }, 4000);
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ════════════════════════════════════════
+// RETRY HELPER — 3 attempts, exponential backoff
+// ════════════════════════════════════════
+async function sbRetry(fn, maxAttempts){
+  maxAttempts = maxAttempts || 3;
+  var lastErr;
+  for(var i = 0; i < maxAttempts; i++){
+    try {
+      var res = await fn();
+      if(!res.error) return res;
+      lastErr = res.error;
+    } catch(e){ lastErr = e; }
+    if(i < maxAttempts - 1){
+      await new Promise(function(r){ setTimeout(r, 600 * Math.pow(2, i)); });
+    }
+  }
+  return { error: lastErr };
+}
+
+// ════════════════════════════════════════
+// PENDING WRITES — never lose unsaved work
+// ════════════════════════════════════════
+var _pendingWrites = {};
+function queuePending(key, fn){ _pendingWrites[key] = fn; }
+function clearPending(key){ delete _pendingWrites[key]; }
+async function flushPending(){
+  var keys = Object.keys(_pendingWrites);
+  for(var i = 0; i < keys.length; i++){
+    var k = keys[i];
+    if(_pendingWrites[k]){
+      try { await _pendingWrites[k](); delete _pendingWrites[k]; } catch(e){}
+    }
+  }
+}
+window.addEventListener('beforeunload', function(e){
+  var hasPending = Object.keys(_pendingWrites).length > 0;
+  if(hasPending){
+    e.preventDefault();
+    e.returnValue = 'You have unsaved changes. Leave anyway?';
+    return e.returnValue;
+  }
+});
+
+// ════════════════════════════════════════
+// FETCH — load latest data on page refresh
 // ════════════════════════════════════════
 async function fetchLogs(){
-  var r = await SB.from('logs').select('*').order('ts',{ascending:true});
-  if(!r.error){ logs = r.data || []; cSave(logs); }
+  showSaveStatus('saving', '⏳ Loading...');
+  var r = await sbRetry(function(){ return SB.from('logs').select('*').order('ts',{ascending:true}); });
+  if(!r.error){
+    logs = r.data || [];
+    cSave(logs);
+    showSaveStatus('saved', '✓ Loaded');
+  } else {
+    showSaveStatus('error', '⚠ Load failed – offline mode');
+    // Fall back to cache if available
+    var cached = cLoad();
+    if(cached && !logs.length) logs = cached;
+  }
 }
 
 // ════════════════════════════════════════
@@ -1200,9 +1328,11 @@ function calcPts(){
 }
 
 // ════════════════════════════════════════
-// SUBMIT LOG
+// SUBMIT LOG — bulletproof with retry + duplicate prevention
 // ════════════════════════════════════════
+var _submitInFlight = false;
 async function submitLog(){
+  if(_submitInFlight){ toast('Save in progress...'); return; }
   var name = document.getElementById('player-select').value.trim();
   var date = document.getElementById('log-date').value;
   if(!name || name==='__other__'){ toast('Select a player first!'); return; }
@@ -1222,16 +1352,24 @@ async function submitLog(){
   }).join(', ');
   var btn = document.getElementById('log-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
+  _submitInFlight = true;
+  showSaveStatus('saving');
+  // Generate a client-side idempotency key to prevent duplicates
+  var idemKey = name + '|' + date + '|' + acts + '|' + pts + '|' + makes;
   var payload = [{name:name,date:date,acts:acts,pts:pts,makes:makes,group:pLoad()&&pLoad().group||'',ts:Date.now()}];
-  var res = await SB.from('logs').insert(payload);
-  if(res.error){
-    // Cold start — wait 1.8s and retry once silently
-    btn.textContent = 'Retrying...';
-    await new Promise(function(r){ setTimeout(r, 1800); });
-    res = await SB.from('logs').insert(payload);
-  }
+  // Queue as pending in case page closes
+  queuePending('submitLog', async function(){
+    return await sbRetry(function(){ return SB.from('logs').insert(payload); });
+  });
+  var res = await sbRetry(function(){ return SB.from('logs').insert(payload); });
+  _submitInFlight = false;
   btn.disabled = false; btn.textContent = 'Log It 🏀';
-  if(res.error){ toast('Save failed — check connection'); return; }
+  if(res.error){
+    showSaveStatus('error', '⚠ Save failed – check connection');
+    toast('⚠ Save failed — check connection'); return;
+  }
+  clearPending('submitLog');
+  showSaveStatus('saved', '✓ Saved!');
   actSel = {}; ctrs = {}; makes = 0;
   document.getElementById('makes-disp').textContent = '0';
   document.querySelectorAll('.ab').forEach(function(b){ b.classList.remove('on'); });
@@ -1371,6 +1509,18 @@ function renderLb(){
     else subtitle.textContent = 'Off-season standings — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup);
   }
   var body = document.getElementById('lb-body');
+  // HS-only ultimate prize callout
+  var hsBanner = document.getElementById('lb-hs-banner');
+  if(!hsBanner){
+    hsBanner = document.createElement('div');
+    hsBanner.id = 'lb-hs-banner';
+    hsBanner.style.cssText = 'margin:0 0 12px 0;padding:12px 16px;background:linear-gradient(135deg,rgba(200,150,12,0.18),rgba(240,180,41,0.06));border:1px solid var(--gold-border-strong);border-radius:12px;text-align:center;';
+    hsBanner.innerHTML = '<div style="font-size:22px;margin-bottom:4px">💟</div>'
+      +'<div style="font-family:var(--font-display);font-size:13px;font-weight:900;font-style:italic;letter-spacing:1px;color:var(--gold-bright);text-transform:uppercase;margin-bottom:3px">Custom Team Shoes</div>'
+      +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">Ultimate Prize — awarded Oct 31 to the<br><strong style="color:var(--text)">highest point earner in High School</strong></div>';
+    body.parentNode.insertBefore(hsBanner, body);
+  }
+  hsBanner.style.display = (lbGroup==='hs') ? 'block' : 'none';
   if(!pl.length){
     var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
     body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
@@ -1532,7 +1682,8 @@ function renderCoach(){
 
   var actHtml = '<div style="display:flex;flex-direction:column;gap:10px;">'
     +'<button class="btn" id="award-bonus-btn">🏆 Award Bonus Points</button>'
-    +'<button class="btn btn-green" id="export-csv-btn">📄 Export CSV</button>'
+    +'<button class="btn" style="background:rgba(30,80,180,0.15);border-color:rgba(60,120,255,0.35);color:#7aafff;" id="email-coach-btn">📧 Email Coach Backup</button>'
+    +'<button class="btn btn-green" id="export-csv-btn">📄 Export CSV (Full Data)</button>'
     +'<button class="btn btn-green" id="export-xlsx-btn">📊 Export Excel (.xlsx)</button>'
     +'<button class="btn '+(coachModeOn?'btn-red':'btn-dim')+'" id="toggle-override-btn">'+(coachModeOn?'✅ Coach Override ON (tap to disable)':'📋 Enable Coach Override (log any date)')+'</button>'
     +'<button class="btn btn-dim" id="lock-coach-btn">🔒 Lock Coach View</button>'
@@ -1565,6 +1716,12 @@ function renderCoach(){
 
   var abtn = document.getElementById('award-bonus-btn');
   if(abtn) abtn.addEventListener('click', openAwardBonusModal);
+  var ecch = document.getElementById('email-coach-btn');
+  if(ecch) ecch.addEventListener('click', function(){
+    emailCSVToCoach('Manual');
+    exportCSV();
+    toast('📧 Email opened + CSV downloaded!');
+  });
   var ecsv = document.getElementById('export-csv-btn');
   if(ecsv) ecsv.addEventListener('click', exportCSV);
   var exls = document.getElementById('export-xlsx-btn');
@@ -1643,11 +1800,12 @@ async function saveEditLog(){
   var pts = parseInt(document.getElementById('edit-pts').value)||0;
   var mk = parseInt(document.getElementById('edit-makes').value)||0;
   if(!name||!date){ toast('Fill all fields'); return; }
-  var res = await SB.from('logs').update({name:name,date:date,acts:acts,pts:pts,makes:mk}).eq('id',id);
-  if(res.error){ toast('Update failed'); return; }
+  showSaveStatus('saving');
+  var res = await sbRetry(function(){ return SB.from('logs').update({name:name,date:date,acts:acts,pts:pts,makes:mk}).eq('id',id); });
+  if(res.error){ showSaveStatus('error','⚠ Update failed'); toast('Update failed'); return; }
   var idx = logs.findIndex(function(l){ return l.id===id; });
   if(idx>=0) logs[idx] = Object.assign({},logs[idx],{name:name,date:date,acts:acts,pts:pts,makes:mk});
-  cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
+  cSave(logs); showSaveStatus('saved','✓ Updated'); closeModal('edit-modal'); renderCoach(); renderLb();
   var ss = document.getElementById('stats-sel').value.toLowerCase();
   if(ss) renderStats();
   toast('Entry updated ✅');
@@ -1655,10 +1813,11 @@ async function saveEditLog(){
 
 async function deleteLog(id){
   if(!confirm('Delete this log entry?')) return;
-  var res = await SB.from('logs').delete().eq('id',id);
-  if(res.error){ toast('Delete failed'); return; }
+  showSaveStatus('saving','⏳ Deleting...');
+  var res = await sbRetry(function(){ return SB.from('logs').delete().eq('id',id); });
+  if(res.error){ showSaveStatus('error','⚠ Delete failed'); toast('Delete failed'); return; }
   logs = logs.filter(function(l){ return l.id!==id; });
-  cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
+  cSave(logs); showSaveStatus('saved','✓ Deleted'); closeModal('edit-modal'); renderCoach(); renderLb();
   var ss = document.getElementById('stats-sel').value.toLowerCase();
   if(ss) renderStats();
   toast('Entry deleted');
@@ -1728,40 +1887,137 @@ function deletePlayer(name){
 }
 
 // ════════════════════════════════════════
-// EXPORTS
+// EXPORTS & COACH AUTO-BACKUP
 // ════════════════════════════════════════
-function exportCSV(){
-  var rows=[['Name','Date','Activities','Points','Makes','Logged At']];
+var COACH_EMAIL = 'jacob.panico@centrallocal.org';
+
+function buildCSVContent(){
+  var rows=[['Name','Date','Activities','Points','Makes','Group','Logged At']];
   [].concat(logs).sort(function(a,b){return(a.date||'').localeCompare(b.date||'')||a.ts-b.ts;}).forEach(function(l){
-    rows.push([l.name,l.date,'"'+l.acts.replace(/"/g,'""')+'"',l.pts,l.makes,new Date(l.ts).toLocaleString()]);
+    rows.push([l.name,l.date,'"'+l.acts.replace(/"/g,'""')+'"',l.pts,l.makes,l.group||'',new Date(l.ts).toLocaleString()]);
   });
-  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
-  var blob = new Blob([csv],{type:'text/csv'});
-  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='HoopNHustle_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click(); URL.revokeObjectURL(a.href); toast('📄 CSV downloaded!');
+  rows.push(['']);
+  rows.push(['--- PLAYER SUMMARY ---']);
+  rows.push(['Rank','Player','Total Points','Total Makes','Sessions','Group','Tier']);
+  aggPlayers(logs).sort(function(a,b){return b.pts-a.pts;}).forEach(function(p,i){
+    var t=getTier(p.pts);
+    rows.push([i+1,p.name,p.pts,p.makes,p.sessions,p.group||'',t.l.replace(/[^\x00-\x7F]/g,'').trim()]);
+  });
+  return rows.map(function(r){ return r.join(','); }).join('\n');
 }
 
+function exportCSV(){
+  var csv = buildCSVContent();
+  var blob = new Blob([csv],{type:'text/csv'});
+  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  var dt = new Date().toISOString().slice(0,10);
+  a.download='HoopNHustle_Backup_'+dt+'.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  try{ localStorage.setItem('hhc_lastbackup', Date.now()); }catch(e){}
+  toast('\uD83D\uDCC4 CSV downloaded!');
+}
+
+function emailCSVToCoach(triggerType){
+  triggerType = triggerType || 'Manual';
+  var dt = new Date().toLocaleDateString();
+  var pl = aggPlayers(logs);
+  var sorted = [].concat(pl).sort(function(a,b){return b.pts-a.pts;});
+  var top3 = sorted.slice(0,3);
+  var subject = encodeURIComponent('[Hoop N\'  Hustle] '+triggerType+' Backup — '+dt);
+  var lines = [
+    'Hoop N\'  Hustle | Fairview Apaches — '+triggerType+' Backup',
+    'Generated: '+dt,
+    '',
+    '=== QUICK STATS ===',
+    'Total Players: '+pl.length,
+    'Total Team Points: '+pl.reduce(function(s,p){return s+p.pts;},0),
+    'Total Team Makes: '+pl.reduce(function(s,p){return s+p.makes;},0),
+    'Total Log Entries: '+logs.length,
+    '',
+    '=== TOP 3 PLAYERS ===',
+  ];
+  top3.forEach(function(p,i){
+    lines.push((i+1)+'. '+p.name+' — '+p.pts+' pts ('+p.sessions+' sessions, '+p.makes+' makes)');
+  });
+  lines.push('');
+  lines.push('=== ALL PLAYERS (by points) ===');
+  sorted.forEach(function(p,i){
+    var t=getTier(p.pts);
+    lines.push((i+1)+'. '+p.name+' | '+p.pts+' pts | '+p.makes+' makes | '+p.sessions+' sessions | '+(p.group||'?')+' | Tier: '+t.l.replace(/[^\x00-\x7F]/g,'').trim());
+  });
+  lines.push('');
+  lines.push('NOTE: Download the full CSV from the Coach panel for complete log history.');
+  lines.push('');
+  lines.push('— Hoop N\'  Hustle Backup System');
+  var body = encodeURIComponent(lines.join('\n'));
+  var link = document.createElement('a');
+  link.href = 'mailto:'+COACH_EMAIL+'?subject='+subject+'&body='+body;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  try{ localStorage.setItem('hhc_lastbackup', Date.now()); }catch(e){}
+}
+
+function checkWeeklyBackup(){
+  try{
+    var last = parseInt(localStorage.getItem('hhc_lastbackup')||'0');
+    var now = Date.now();
+    var day = new Date().getDay();
+    var daysSince = (now - last) / (1000*60*60*24);
+    if(day === 0 && daysSince > 6){
+      setTimeout(function(){
+        var banner = document.createElement('div');
+        banner.id = 'weekly-backup-banner';
+        banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(18,18,18,0.98);border:1px solid var(--gold-border-strong);border-radius:14px;padding:16px 20px;max-width:340px;width:90%;z-index:10000;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.6);';
+        banner.innerHTML = '<div style="font-size:18px;margin-bottom:4px">\uD83D\uDCCB Weekly Backup Reminder</div>'
+          +'<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">It\'s Sunday! Send Coach the weekly backup to keep records safe.</div>'
+          +'<div style="display:flex;gap:8px;">'
+          +'<button id="wb-email" class="btn btn-sm" style="flex:1;font-size:12px">\uD83D\uDCE7 Email Coach</button>'
+          +'<button id="wb-csv" class="btn btn-sm" style="flex:1;background:rgba(80,160,80,0.15);border-color:rgba(80,200,80,0.3);color:#6dd06d;font-size:12px">\uD83D\uDCBE CSV Only</button>'
+          +'</div>'
+          +'<button id="wb-dismiss" style="margin-top:10px;background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;width:100%;text-decoration:underline;">Dismiss for today</button>';
+        document.body.appendChild(banner);
+        document.getElementById('wb-email').addEventListener('click', function(){
+          emailCSVToCoach('Sunday Auto');
+          exportCSV();
+          document.body.removeChild(banner);
+          toast('\uD83D\uDCE7 Backup sent to Coach!');
+        });
+        document.getElementById('wb-csv').addEventListener('click', function(){
+          exportCSV();
+          document.body.removeChild(banner);
+        });
+        document.getElementById('wb-dismiss').addEventListener('click', function(){
+          try{ localStorage.setItem('hhc_lastbackup', Date.now()); }catch(e){}
+          document.body.removeChild(banner);
+        });
+      }, 2000);
+    }
+  } catch(e){}
+}
 function exportExcel(){
   if(typeof XLSX==='undefined'){ toast('Spreadsheet library loading, try again.'); return; }
   var wb = XLSX.utils.book_new();
-  var logRows=[['Name','Date','Activities','Points','Makes','Logged At']];
+  var logRows=[['Name','Date','Activities','Points','Makes','Group','Logged At']];
   [].concat(logs).sort(function(a,b){return(a.date||'').localeCompare(b.date||'')||a.ts-b.ts;}).forEach(function(l){
-    logRows.push([l.name,l.date,l.acts,l.pts,l.makes,new Date(l.ts).toLocaleString()]);
+    logRows.push([l.name,l.date,l.acts,l.pts,l.makes,l.group||'',new Date(l.ts).toLocaleString()]);
   });
   var wsLogs=XLSX.utils.aoa_to_sheet(logRows);
-  wsLogs['!cols']=[{wch:20},{wch:12},{wch:50},{wch:8},{wch:8},{wch:22}];
+  wsLogs['!cols']=[{wch:20},{wch:12},{wch:50},{wch:8},{wch:8},{wch:10},{wch:22}];
   XLSX.utils.book_append_sheet(wb,wsLogs,'All Logs');
   var pl=aggPlayers(logs).sort(function(a,b){return b.pts-a.pts;});
-  var sumRows=[['Rank','Player','Total Points','Total Makes','Sessions','Avg Pts/Session','Tier']];
+  var sumRows=[['Rank','Player','Group','Total Points','Total Makes','Sessions','Avg Pts/Session','Tier']];
   pl.forEach(function(p,i){
     var tier=getTier(p.pts);
-    sumRows.push([i+1,p.name,p.pts,p.makes,p.sessions,p.sessions>0?(p.pts/p.sessions).toFixed(1):0,tier.l.replace(/[^\x00-\x7F]/g,'').trim()]);
+    sumRows.push([i+1,p.name,p.group||'',p.pts,p.makes,p.sessions,p.sessions>0?(p.pts/p.sessions).toFixed(1):0,tier.l.replace(/[^\x00-\x7F]/g,'').trim()]);
   });
   var wsSum=XLSX.utils.aoa_to_sheet(sumRows);
-  wsSum['!cols']=[{wch:6},{wch:20},{wch:14},{wch:14},{wch:10},{wch:18},{wch:18}];
+  wsSum['!cols']=[{wch:6},{wch:20},{wch:10},{wch:14},{wch:14},{wch:10},{wch:18},{wch:18}];
   XLSX.utils.book_append_sheet(wb,wsSum,'Player Summary');
-  XLSX.writeFile(wb,'HoopNHustle_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  var dt = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'HoopNHustle_Backup_'+dt+'.xlsx');
+  try{ localStorage.setItem('hhc_lastbackup', Date.now()); }catch(e){}
   toast('📊 Excel downloaded!');
 }
 
@@ -1779,9 +2035,11 @@ function toggleCoachMode(){ coachModeOn=!coachModeOn; setupDate(); renderCoach()
 async function resetData(){
   if(!confirm('Reset ALL data? This cannot be undone.')) return;
   if(prompt('Type RESET to confirm:')!=='RESET'){ toast('Cancelled'); return; }
-  var r = await SB.from('logs').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  if(r.error){ toast('Error resetting'); return; }
+  showSaveStatus('saving','⏳ Resetting...');
+  var r = await sbRetry(function(){ return SB.from('logs').delete().neq('id','00000000-0000-0000-0000-000000000000'); });
+  if(r.error){ showSaveStatus('error','⚠ Error resetting'); toast('Error resetting'); return; }
   logs=[]; try{localStorage.removeItem('hhc_c');}catch(e){}
+  showSaveStatus('saved','✓ Reset complete');
   renderLb(); renderCoach(); toast('Data cleared! 🏀');
 }
 
@@ -1804,9 +2062,26 @@ function showSplash(name, ptsEarned){
   document.getElementById('sp-rlabel').textContent = np?nxt.i+' '+nxt.n:'🏆 All tiers!';
   document.getElementById('sp-rval').textContent = np?tp+' / '+np:tp+' pts';
   var rb = document.getElementById('sp-reward');
-  if(je) rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
+  if(je) {
+    rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
+    // If the reward is a T-shirt or Hoodie, prompt for shirt size
+    var isShirt = je.n.toLowerCase().indexOf('shirt') >= 0 || je.n.toLowerCase().indexOf('tee') >= 0;
+    var isHoodie = je.n.toLowerCase().indexOf('hoodie') >= 0;
+    if(isShirt || isHoodie) {
+      var modalTitle = isHoodie ? '🏅 You Earned a Hoodie!' : '👕 You Earned a T-Shirt!';
+      var modalSub = 'Enter your shirt size so coach can order it for you. This will be emailed to Coach automatically.';
+      document.getElementById('shirt-size-modal-title').textContent = modalTitle;
+      document.getElementById('shirt-size-modal-sub').textContent = modalSub;
+      document.getElementById('shirt-size-sel').value = '';
+      // Store award info for email
+      window._pendingAward = { name: name, reward: je.n, emoji: je.i };
+      // Delay so splash renders first
+      setTimeout(function(){ openModal('shirt-size-modal'); }, 600);
+    }
+  }
   else if(np) rb.innerHTML='<div class="spnr"><div class="ri">'+nxt.i+'</div><div class="rn">'+nxt.n+'</div><div class="rp">'+(np-tp)+' pts to unlock'+(nxt.d?' · '+nxt.d:'')+'</div></div>';
-  else rb.innerHTML='<div class="spnr"><div class="ri">💟</div><div class="rn">Custom Shoes Contender</div><div class="rp">Stay on top! · awarded Oct 31</div></div>';
+  else if(splashGrp==='hs') rb.innerHTML='<div class="spnr"><div class="ri">💟</div><div class="rn">Custom Shoes Contender</div><div class="rp">Top HS earner wins! · awarded Oct 31</div></div>';
+  else rb.innerHTML='<div class="spnr"><div class="ri">🏅</div><div class="rn">All rewards unlocked!</div><div class="rp">Keep grinding — stay on top of the board.</div></div>';
   var q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
   document.getElementById('sp-quote-text').textContent = '"' + q.text + '"';
   document.getElementById('sp-quote-attr').textContent = '— ' + q.attr;
@@ -1825,10 +2100,14 @@ function closeSplash(){
 // ════════════════════════════════════════
 function siSwitch(role){
   var isP = role==='player';
-  document.getElementById('si-pf').style.display = isP?'block':'none';
-  document.getElementById('si-cf').style.display = isP?'none':'block';
+  var isPar = role==='parent';
+  var isC = role==='coach';
+  document.getElementById('si-pf').style.display = isP ? 'block' : 'none';
+  document.getElementById('si-parf').style.display = isPar ? 'block' : 'none';
+  document.getElementById('si-cf').style.display = isC ? 'block' : 'none';
   document.getElementById('si-tp').classList.toggle('on', isP);
-  document.getElementById('si-tc').classList.toggle('on', !isP);
+  document.getElementById('si-tpar').classList.toggle('on', isPar);
+  document.getElementById('si-tc').classList.toggle('on', isC);
 }
 
 function doSignIn(){
@@ -1844,6 +2123,58 @@ function doSignIn(){
   err.textContent='';
   var p = {first:fn,last:ln,email:em,name:fn+' '+ln,group:grp,isCoach:false};
   pSave(p); document.getElementById('si').style.display='none'; applyPlayer(p);
+}
+
+function doParentIn(){
+  var name = document.getElementById('si-parfn').value.trim();
+  var playerEmail = document.getElementById('si-parem').value.trim();
+  var err = document.getElementById('si-parerr');
+  if(!name){ err.textContent='Enter your name'; return; }
+  if(!playerEmail || playerEmail.indexOf('@')<0){ err.textContent='Enter a valid player email'; return; }
+  err.textContent='';
+  // Find which player has that email
+  var matchedPlayer = null;
+  // Search logs for any player whose saved profile email matches
+  // We store this lookup by scanning known profiles in localStorage
+  var playerEmail_lc = playerEmail.toLowerCase();
+  // Try to find the player name from logs (players save their profile)
+  // We save a parent profile and look up the player name when rendering
+  var p = {parentName:name, playerEmail:playerEmail_lc, isParent:true};
+  pSave(p);
+  document.getElementById('si').style.display='none';
+  applyParent(p);
+}
+
+function applyParent(p){
+  // Show a read-only view — navigate to leaderboard, hide log tab controls
+  document.getElementById('welcome-bar').style.display = 'flex';
+  document.getElementById('wname').textContent = 'Hi, '+p.parentName+' 👀';
+  document.getElementById('wemail').textContent = 'Watching: '+p.playerEmail;
+  document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Parent</span>';
+  document.getElementById('player-card').style.display = 'none';
+  // Hide the log page nav — parents can only see stats and leaderboard
+  document.getElementById('nav-log').style.display = 'none';
+  document.getElementById('nav-coach').style.display = 'none';
+  // Go to leaderboard by default
+  goPage('lb', document.getElementById('nav-lb'));
+  // Set up stats to show the player's data — try to find by email
+  findPlayerByEmail(p.playerEmail);
+}
+
+function findPlayerByEmail(email){
+  // Search aggregated player data — look for a player whose profile email matches
+  // Since emails are stored per-player in their pSave, we can't directly query
+  // Instead we show the leaderboard and let the parent tap on their child
+  // We also attempt to auto-navigate to stats if we find a name match
+  var el = document.getElementById('nav-stats');
+  // Show a hint banner on leaderboard
+  setTimeout(function(){
+    var hint = document.createElement('div');
+    hint.style.cssText = 'background:rgba(255,203,5,0.1);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);text-align:center;';
+    hint.innerHTML = '👆 Tap your player\'s name to see their full stats';
+    var lbBody = document.getElementById('lb-body');
+    if(lbBody && lbBody.parentNode) lbBody.parentNode.insertBefore(hint, lbBody);
+  }, 300);
 }
 
 function doCoachIn(){
@@ -1887,7 +2218,7 @@ function applyPlayer(p){
 
 function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
-  document.getElementById('hdr-right').innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--red);text-transform:uppercase;padding:4px 10px;border:1px solid rgba(239,68,68,0.3);border-radius:6px;">Coach</div>';
+  document.getElementById('hdr-right').innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;padding:4px 10px;border:1px solid var(--gold-border);border-radius:6px;">Coach</div>';
   goPage('coach', document.getElementById('nav-coach'));
 }
 
@@ -1920,21 +2251,54 @@ async function saveAwardBonus(){
   if(!name){ toast('Select a player!'); return; }
   var btn = document.getElementById('award-save-btn');
   btn.disabled = true; btn.textContent = 'Awarding...';
+  showSaveStatus('saving');
   var today = new Date().toISOString().slice(0,10);
   var payload = [{name:name, date:today, acts:reason, pts:pts, makes:0, group:'', ts:Date.now()}];
-  var res = await SB.from('logs').insert(payload);
-  if(res.error){
-    await new Promise(function(r){ setTimeout(r,1800); });
-    res = await SB.from('logs').insert(payload);
-  }
+  var res = await sbRetry(function(){ return SB.from('logs').insert(payload); });
   btn.disabled = false; btn.textContent = 'Award It 🏆';
-  if(res.error){ toast('Save failed — check connection'); return; }
+  if(res.error){ showSaveStatus('error','⚠ Save failed'); toast('Save failed — check connection'); return; }
+  showSaveStatus('saved','✓ Awarded!');
   logs.push(payload[0]); cSave(logs);
   closeModal('award-bonus-modal');
   renderCoach(); renderLb();
   toast('🏆 '+pts+' bonus pts awarded to '+name+'!');
 }
 
+
+// ════════════════════════════════════════
+// SHIRT SIZE & AWARD EMAIL
+// ════════════════════════════════════════
+function submitShirtSize(){
+  var size = document.getElementById('shirt-size-sel').value;
+  if(!size){ toast('Please select a shirt size!'); return; }
+  var award = window._pendingAward || {};
+  var p = pLoad();
+  var playerName = (p && p.name) ? p.name : (award.name || 'Unknown');
+  var playerEmail = (p && p.email) ? p.email : '';
+  sendAwardEmail(playerName, playerEmail, award.reward || 'Reward', award.emoji || '🎽', size);
+  closeModal('shirt-size-modal');
+  toast('Size submitted! Coach has been notified 📧');
+  window._pendingAward = null;
+}
+
+function sendAwardEmail(playerName, playerEmail, rewardName, rewardEmoji, shirtSize){
+  var subject = encodeURIComponent(rewardEmoji + ' Award Earned: ' + rewardName + ' — ' + playerName);
+  var body = encodeURIComponent(
+    'A player just unlocked a reward!\n\n' +
+    'Player: ' + playerName + '\n' +
+    'Player Email: ' + (playerEmail || 'not provided') + '\n' +
+    'Award: ' + rewardName + '\n' +
+    'Shirt Size: ' + shirtSize + '\n' +
+    'Date: ' + new Date().toLocaleDateString() + '\n\n' +
+    '— Hoop N\' Hustle App'
+  );
+  var link = document.createElement('a');
+  link.href = 'mailto:jacob.panico@centrallocal.org?subject=' + subject + '&body=' + body;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
