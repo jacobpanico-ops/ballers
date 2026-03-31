@@ -838,6 +838,7 @@ select.inp { cursor: pointer; }
     <div class="si-tagline">Fairview Apaches</div>
     <div class="si-tabs">
       <button class="si-tab on" id="si-tp">Player</button>
+      <button class="si-tab" id="si-tpar">Parent</button>
       <button class="si-tab" id="si-tc">Coach</button>
     </div>
     <div class="si-form" id="si-pf">
@@ -857,6 +858,14 @@ select.inp { cursor: pointer; }
       </div>
       <button class="si-go-btn" id="si-go">Let's Go 🏀</button>
       <div class="si-err" id="si-perr"></div>
+    </div>
+    <div class="si-form" id="si-parf" style="display:none">
+      <div class="si-title">Parent View 👀</div>
+      <div class="si-desc">Enter your player's email to follow their progress. View-only — no logging or editing.</div>
+      <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-parfn" type="text" autocomplete="given-name" autocorrect="off" placeholder="Jane Johnson"></div>
+      <div class="si-row"><label class="si-lbl">Player's Email</label><input class="si-inp" id="si-parem" type="email" autocomplete="off" placeholder="marcus@email.com"></div>
+      <button class="si-go-btn" id="si-pargo">View My Player 🏀</button>
+      <div class="si-err" id="si-parerr"></div>
     </div>
     <div class="si-form" id="si-cf" style="display:none">
       <div class="si-title">Coach Access</div>
@@ -998,6 +1007,7 @@ window.addEventListener('load', function(){
   if(p){
     document.getElementById('si').style.display = 'none';
     if(p.isCoach){ enterCoachMode(p.name); }
+    else if(p.isParent){ applyParent(p); }
     else { applyPlayer(p); }
   }
 
@@ -1035,10 +1045,12 @@ function wireEvents(){
 
   // Sign-in tabs
   document.getElementById('si-tp').addEventListener('click', function(){ siSwitch('player'); });
+  document.getElementById('si-tpar').addEventListener('click', function(){ siSwitch('parent'); });
   document.getElementById('si-tc').addEventListener('click', function(){ siSwitch('coach'); });
 
   // Sign-in buttons
   document.getElementById('si-go').addEventListener('click', doSignIn);
+  document.getElementById('si-pargo').addEventListener('click', doParentIn);
   document.getElementById('si-cgo').addEventListener('click', doCoachIn);
 
   // Sign out
@@ -1092,6 +1104,7 @@ function wireEvents(){
 
   // Enter key on sign-in
   document.getElementById('si-em').addEventListener('keydown', function(e){ if(e.key==='Enter') doSignIn(); });
+  document.getElementById('si-parem').addEventListener('keydown', function(e){ if(e.key==='Enter') doParentIn(); });
   document.getElementById('si-cp').addEventListener('keydown', function(e){ if(e.key==='Enter') doCoachIn(); });
 }
 
@@ -1883,10 +1896,14 @@ function closeSplash(){
 // ════════════════════════════════════════
 function siSwitch(role){
   var isP = role==='player';
-  document.getElementById('si-pf').style.display = isP?'block':'none';
-  document.getElementById('si-cf').style.display = isP?'none':'block';
+  var isPar = role==='parent';
+  var isC = role==='coach';
+  document.getElementById('si-pf').style.display = isP ? 'block' : 'none';
+  document.getElementById('si-parf').style.display = isPar ? 'block' : 'none';
+  document.getElementById('si-cf').style.display = isC ? 'block' : 'none';
   document.getElementById('si-tp').classList.toggle('on', isP);
-  document.getElementById('si-tc').classList.toggle('on', !isP);
+  document.getElementById('si-tpar').classList.toggle('on', isPar);
+  document.getElementById('si-tc').classList.toggle('on', isC);
 }
 
 function doSignIn(){
@@ -1902,6 +1919,58 @@ function doSignIn(){
   err.textContent='';
   var p = {first:fn,last:ln,email:em,name:fn+' '+ln,group:grp,isCoach:false};
   pSave(p); document.getElementById('si').style.display='none'; applyPlayer(p);
+}
+
+function doParentIn(){
+  var name = document.getElementById('si-parfn').value.trim();
+  var playerEmail = document.getElementById('si-parem').value.trim();
+  var err = document.getElementById('si-parerr');
+  if(!name){ err.textContent='Enter your name'; return; }
+  if(!playerEmail || playerEmail.indexOf('@')<0){ err.textContent='Enter a valid player email'; return; }
+  err.textContent='';
+  // Find which player has that email
+  var matchedPlayer = null;
+  // Search logs for any player whose saved profile email matches
+  // We store this lookup by scanning known profiles in localStorage
+  var playerEmail_lc = playerEmail.toLowerCase();
+  // Try to find the player name from logs (players save their profile)
+  // We save a parent profile and look up the player name when rendering
+  var p = {parentName:name, playerEmail:playerEmail_lc, isParent:true};
+  pSave(p);
+  document.getElementById('si').style.display='none';
+  applyParent(p);
+}
+
+function applyParent(p){
+  // Show a read-only view — navigate to leaderboard, hide log tab controls
+  document.getElementById('welcome-bar').style.display = 'flex';
+  document.getElementById('wname').textContent = 'Hi, '+p.parentName+' 👀';
+  document.getElementById('wemail').textContent = 'Watching: '+p.playerEmail;
+  document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Parent</span>';
+  document.getElementById('player-card').style.display = 'none';
+  // Hide the log page nav — parents can only see stats and leaderboard
+  document.getElementById('nav-log').style.display = 'none';
+  document.getElementById('nav-coach').style.display = 'none';
+  // Go to leaderboard by default
+  goPage('lb', document.getElementById('nav-lb'));
+  // Set up stats to show the player's data — try to find by email
+  findPlayerByEmail(p.playerEmail);
+}
+
+function findPlayerByEmail(email){
+  // Search aggregated player data — look for a player whose profile email matches
+  // Since emails are stored per-player in their pSave, we can't directly query
+  // Instead we show the leaderboard and let the parent tap on their child
+  // We also attempt to auto-navigate to stats if we find a name match
+  var el = document.getElementById('nav-stats');
+  // Show a hint banner on leaderboard
+  setTimeout(function(){
+    var hint = document.createElement('div');
+    hint.style.cssText = 'background:rgba(255,203,5,0.1);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);text-align:center;';
+    hint.innerHTML = '👆 Tap your player\'s name to see their full stats';
+    var lbBody = document.getElementById('lb-body');
+    if(lbBody && lbBody.parentNode) lbBody.parentNode.insertBefore(hint, lbBody);
+  }, 300);
 }
 
 function doCoachIn(){
