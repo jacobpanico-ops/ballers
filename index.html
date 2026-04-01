@@ -444,10 +444,12 @@ select.inp { cursor: pointer; }
 .bonus-multi { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold); }
 
 /* ═══ SPLASH ═══ */
-.sp { position: fixed; inset: 0; background: rgba(2,2,2,0.97); z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow: hidden; }
-.sp::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(255,180,0,0.15), rgba(200,150,12,0.08) 40%, transparent 70%); pointer-events: none; }
-.sp::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,140,0,0.03) 50%, transparent 70%); animation: sp-pulse 3s ease-in-out infinite; pointer-events: none; }
+.sp { position: fixed; inset: 0; background: rgba(2,2,2,0.97); z-index: 400; display: flex; flex-direction: column; align-items: center; padding: 24px 24px 40px; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.sp::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(255,180,0,0.15), rgba(200,150,12,0.08) 40%, transparent 70%); pointer-events: none; z-index: -1; }
+.sp::after { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,140,0,0.03) 50%, transparent 70%); animation: sp-pulse 3s ease-in-out infinite; pointer-events: none; z-index: -1; }
 @keyframes sp-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+.sp-spacer { flex: 1; min-height: 10px; max-height: 60px; }
+.sp-content { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; width: 100%; }
 .sp.on { opacity: 1; pointer-events: all; }
 .spe { font-family: var(--font-display); font-size: 120px; font-weight: 900; font-style: italic; color: var(--gold-bright); line-height: 1; animation: pop 0.5s ease-out; text-shadow: 0 0 60px rgba(255,180,0,0.6), 0 0 120px rgba(255,120,0,0.35), 0 4px 8px rgba(0,0,0,0.5); position: relative; z-index: 1; }
 @keyframes pop { 0%{transform:scale(0.4) rotate(-5deg);opacity:0} 60%{transform:scale(1.1) rotate(1deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
@@ -465,7 +467,7 @@ select.inp { cursor: pointer; }
 @keyframes reward-pop { 0%{transform:scale(0.5) translateY(20px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
 
 /* ═══ SPLASH QUOTE ═══ */
-.sp-quote { width: 100%; max-width: 320px; margin-top: 18px; margin-bottom: 4px; padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(255,203,5,0.05); border-radius: 0 8px 8px 0; }
+.sp-quote { width: 100%; max-width: 320px; margin-top: 18px; margin-bottom: 10px; padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(255,203,5,0.05); border-radius: 0 8px 8px 0; }
 .sp-quote-text { font-size: 13px; font-style: italic; color: var(--text); line-height: 1.55; margin-bottom: 6px; }
 .sp-quote-attr { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
 
@@ -668,7 +670,7 @@ select.inp { cursor: pointer; }
 @keyframes bdg-title-pulse { 0% { opacity: 0.8; } 100% { opacity: 1; text-shadow: 0 0 30px rgba(255,200,0,0.6); } }
 
 /* Splash confetti */
-.sp-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.sp-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .confetti-piece {
   position: absolute; width: 8px; height: 8px; top: -10px;
   animation: confetti-fall linear forwards;
@@ -770,7 +772,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v2.4</div>
+        <div class="logo-badge">Fairview Apaches · v2.6</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -896,21 +898,25 @@ select.inp { cursor: pointer; }
 <!-- SPLASH -->
 <div class="sp" id="splash">
   <div class="sp-confetti" id="sp-confetti"></div>
-  <div class="spn" id="sp-name"></div>
-  <div class="spe" id="sp-pts"></div>
-  <div class="spt">Points Earned Today</div>
-  <div class="spo">Season Total: <span id="sp-total"></span> pts</div>
-  <div class="spw">
-    <div class="spl"><span id="sp-rlabel"></span><span id="sp-rval"></span></div>
-    <div class="sptr"><div class="spf" id="sp-fill"></div></div>
+  <div class="sp-spacer"></div>
+  <div class="sp-content">
+    <div class="spn" id="sp-name"></div>
+    <div class="spe" id="sp-pts"></div>
+    <div class="spt">Points Earned Today</div>
+    <div class="spo">Season Total: <span id="sp-total"></span> pts</div>
+    <div class="spw">
+      <div class="spl"><span id="sp-rlabel"></span><span id="sp-rval"></span></div>
+      <div class="sptr"><div class="spf" id="sp-fill"></div></div>
+    </div>
+    <div id="sp-reward"></div>
+    <div id="sp-badges"></div>
+    <button class="btn" style="max-width:280px;position:relative;z-index:1" id="splash-close-btn">View My Stats ▶</button>
+    <div class="sp-quote" id="sp-quote">
+      <div class="sp-quote-text" id="sp-quote-text"></div>
+      <div class="sp-quote-attr" id="sp-quote-attr"></div>
+    </div>
   </div>
-  <div id="sp-reward"></div>
-  <div id="sp-badges"></div>
-  <button class="btn" style="max-width:280px;position:relative;z-index:1" id="splash-close-btn">View My Stats ▶</button>
-  <div class="sp-quote" id="sp-quote">
-    <div class="sp-quote-text" id="sp-quote-text"></div>
-    <div class="sp-quote-attr" id="sp-quote-attr"></div>
-  </div>
+  <div class="sp-spacer"></div>
 </div>
 
 <!-- EDIT LOG MODAL -->
@@ -1413,7 +1419,7 @@ window.addEventListener('load', function(){
   }
 
   var cached = cLoad();
-  if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__'; }); renderLb(); hideLb(); }
+  if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); renderLb(); hideLb(); }
 
   fetchLogs().then(function(){
     renderLb();
@@ -1443,11 +1449,13 @@ window.addEventListener('load', function(){
   SB.channel('hhc').on('postgres_changes',{event:'INSERT',schema:'public',table:'logs'},function(payload){
     if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
     if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} buildActs(); if(coachOn)renderCoach(); return; }
+    if(payload.new.name==='__TRACK__') return;
     logs.push(payload.new); invalidateAggCache(); cSave(logs);
     debouncedRealtimeRender();
   }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
     if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
     if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} buildActs(); if(coachOn)renderCoach(); return; }
+    if(payload.new.name==='__TRACK__') return;
     var idx = logs.findIndex(function(l){ return l.id===payload.new.id; });
     if(idx>=0) logs[idx] = payload.new; else logs.push(payload.new);
     invalidateAggCache(); cSave(logs);
@@ -1455,6 +1463,7 @@ window.addEventListener('load', function(){
   }).on('postgres_changes',{event:'DELETE',schema:'public',table:'logs'},function(payload){
     if(payload.old.name==='__ANNOUNCE__'){ announcement=''; showAnnouncement(); return; }
     if(payload.old.name==='__BONUS__'){ bonusEvent=null; buildActs(); if(coachOn)renderCoach(); return; }
+    if(payload.old.name==='__TRACK__') return;
     logs = logs.filter(function(l){ return l.id!==payload.old.id; });
     invalidateAggCache(); cSave(logs);
     debouncedRealtimeRender();
@@ -1612,7 +1621,7 @@ async function fetchLogs(){
     if(batch.length < batchSize) done = true;
     else from += batchSize;
   }
-  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__'; }); invalidateAggCache(); cSave(logs);
+  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); invalidateAggCache(); cSave(logs);
 }
 
 // ════════════════════════════════════════
@@ -2656,6 +2665,7 @@ function goPage(name, btn){
   if(name==='coach') renderCoach();
   if(name==='stats') renderStats();
   if(name==='analytics') renderAnalytics();
+  trackPageView(name);
 }
 
 // ════════════════════════════════════════
@@ -2883,11 +2893,241 @@ function renderAnalytics(){
     html += '</div></div>';
   }
 
+  // ── DAILY ACTIVE USERS ──
+  var dauMap = {};
+  logs.forEach(function(l){
+    if(!dauMap[l.date]) dauMap[l.date] = {};
+    dauMap[l.date][l.name.toLowerCase()] = true;
+  });
+  var dauDates = Object.keys(dauMap).sort();
+  if(dauDates.length > 1){
+    var dauData = dauDates.map(function(d){ return { date:d, count:Object.keys(dauMap[d]).length }; });
+    // Show last 30 days max
+    var dauSlice = dauData.slice(-30);
+    var maxDAU = Math.max.apply(null, dauSlice.map(function(d){ return d.count; }));
+    if(maxDAU < 1) maxDAU = 1;
+    html += '<div class="an-section-div"><span>Daily Engagement</span></div>'
+      +'<div class="card"><div class="ct">Daily Active Users (Last 30 Days)</div><div class="an-chart">';
+    dauSlice.forEach(function(d){
+      var h = Math.max(3, Math.round(d.count / maxDAU * 100));
+      var dt = new Date(d.date+'T12:00:00');
+      var lbl = (dt.getMonth()+1)+'/'+dt.getDate();
+      html += '<div class="an-col">'
+        +'<div class="an-bar-v">'+d.count+'</div>'
+        +'<div class="an-bar-wrap"><div class="an-bar" style="height:'+h+'%"></div></div>'
+        +'<div class="an-bar-l">'+lbl+'</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // ── COHORT RETENTION ──
+  var playerFirst = {};
+  logs.forEach(function(l){
+    var k = l.name.toLowerCase();
+    if(!playerFirst[k] || l.date < playerFirst[k].first) {
+      if(!playerFirst[k]) playerFirst[k] = { name:l.name, first:l.date, dates:{} };
+      else playerFirst[k].first = l.date;
+    }
+    if(!playerFirst[k]) playerFirst[k] = { name:l.name, first:l.date, dates:{} };
+    playerFirst[k].dates[l.date] = true;
+  });
+  var cohortPlayers = Object.values(playerFirst);
+  var today = new Date();
+  var todayStr = today.toISOString().slice(0,10);
+  var milestones = [
+    {day:7, label:'Day 7', desc:'Logged again within 7 days'},
+    {day:15, label:'Day 15', desc:'Logged again within 15 days'},
+    {day:30, label:'Day 30', desc:'Logged again within 30 days'}
+  ];
+  var cohortData = milestones.map(function(m){
+    var eligible = cohortPlayers.filter(function(p){
+      var firstD = new Date(p.first+'T12:00:00');
+      var cutoff = new Date(firstD); cutoff.setDate(firstD.getDate() + m.day);
+      return cutoff <= today; // enough time has passed
+    });
+    var retained = eligible.filter(function(p){
+      var firstD = new Date(p.first+'T12:00:00');
+      var dates = Object.keys(p.dates);
+      return dates.some(function(d){
+        var dd = new Date(d+'T12:00:00');
+        var diff = Math.round((dd - firstD)/86400000);
+        return diff >= m.day && diff <= m.day + 7; // logged within a 7-day window around the milestone
+      });
+    });
+    var pct = eligible.length > 0 ? Math.round(retained.length / eligible.length * 100) : 0;
+    return { label:m.label, desc:m.desc, eligible:eligible.length, retained:retained.length, pct:pct };
+  });
+
+  html += '<div class="an-section-div"><span>Retention</span></div>'
+    +'<div class="card"><div class="ct">Cohort Retention</div>'
+    +'<div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Of players who signed up, how many are still logging?</div>';
+  cohortData.forEach(function(c){
+    var barColor = c.pct >= 60 ? 'var(--gold-bright)' : c.pct >= 30 ? 'var(--ember2)' : 'var(--ember1)';
+    html += '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">'
+      +'<div><span style="font-family:var(--font-display);font-size:16px;font-weight:900;font-style:italic;color:var(--text);">'+c.label+'</span>'
+      +' <span style="font-size:11px;color:var(--text-muted);">'+c.desc+'</span></div>'
+      +'<div style="font-family:var(--font-display);font-size:24px;font-weight:900;font-style:italic;color:'+barColor+';">'+c.pct+'%</div>'
+      +'</div>'
+      +'<div style="height:12px;background:var(--surface3);border-radius:6px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+Math.max(2,c.pct)+'%;background:linear-gradient(90deg,var(--ember1),'+barColor+');border-radius:6px;transition:width 0.8s;box-shadow:0 0 8px rgba(255,160,0,0.3);"></div>'
+      +'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">'+c.retained+' of '+c.eligible+' eligible players</div>'
+      +'</div>';
+  });
+  html += '</div>';
+
+  // ── NEW PLAYER SIGNUPS ──
+  var signupWeekMap = {};
+  cohortPlayers.forEach(function(p){
+    var d = new Date(p.first+'T12:00:00');
+    var dow = d.getDay(); var diff = dow===0?6:dow-1;
+    var mon = new Date(d); mon.setDate(d.getDate()-diff);
+    var key = mon.toISOString().slice(0,10);
+    signupWeekMap[key] = (signupWeekMap[key]||0)+1;
+  });
+  var signupWeeks = Object.keys(signupWeekMap).sort().map(function(k){ return {week:k, count:signupWeekMap[k]}; });
+  if(signupWeeks.length > 0){
+    var maxSignup = Math.max.apply(null, signupWeeks.map(function(w){ return w.count; }));
+    if(maxSignup < 1) maxSignup = 1;
+    html += '<div class="an-section-div"><span>Growth</span></div>'
+      +'<div class="card"><div class="ct">New Player Signups by Week</div><div class="an-chart">';
+    signupWeeks.forEach(function(w){
+      var h = Math.max(3, Math.round(w.count / maxSignup * 100));
+      var dt = new Date(w.week+'T12:00:00');
+      var lbl = (dt.getMonth()+1)+'/'+dt.getDate();
+      html += '<div class="an-col">'
+        +'<div class="an-bar-v">'+w.count+'</div>'
+        +'<div class="an-bar-wrap"><div class="an-bar" style="height:'+h+'%"></div></div>'
+        +'<div class="an-bar-l">'+lbl+'</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // ── PAGE VIEW ANALYTICS (async load) ──
+  html += '<div class="an-section-div"><span>App Usage</span></div>'
+    +'<div class="card" id="an-pageviews"><div class="ct">Page Views by User Type</div>'
+    +'<div class="an-loading"><div class="an-loader"></div><div class="an-loading-text">Loading tracking data...</div></div></div>';
+
   // Timestamp
   html += '<div class="an-timestamp">Updated: '+new Date().toLocaleString()+' · Season start: '+SEASON_START+'</div>';
 
   body.innerHTML = html;
   _analyticsRendered = true;
+
+  // Load page view data async
+  fetchTrackingData().then(function(tracks){
+    var pvCard = document.getElementById('an-pageviews');
+    if(!pvCard) return;
+    if(!tracks.length){
+      pvCard.innerHTML = '<div class="ct">Page Views by User Type</div>'
+        +'<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:13px;">No tracking data yet. Views will appear as players and parents use the app.</div>';
+      return;
+    }
+    // Parse tracking data
+    var pageViews = { log:{player:0,parent:0}, stats:{player:0,parent:0}, lb:{player:0,parent:0} };
+    var dailyViews = {};
+    var userTypeViews = {player:0, parent:0};
+    tracks.forEach(function(t){
+      var page = t.acts;
+      var parts = (t.group||'').split('|');
+      var utype = parts[0] || 'player';
+      if(pageViews[page]) pageViews[page][utype] = (pageViews[page][utype]||0)+1;
+      userTypeViews[utype] = (userTypeViews[utype]||0)+1;
+      dailyViews[t.date] = (dailyViews[t.date]||0)+1;
+    });
+
+    var pvHtml = '<div class="ct">Page Views by User Type</div>';
+
+    // Page breakdown
+    var pages = [
+      {key:'lb', label:'Leaderboard', icon:'🏆'},
+      {key:'stats', label:'Stats', icon:'📊'},
+      {key:'log', label:'Log Page', icon:'📋'}
+    ];
+    var maxPV = 1;
+    pages.forEach(function(pg){ var t=pageViews[pg.key].player+pageViews[pg.key].parent; if(t>maxPV) maxPV=t; });
+    pages.forEach(function(pg){
+      var total = pageViews[pg.key].player + pageViews[pg.key].parent;
+      var w = Math.max(3, Math.round(total/maxPV*100));
+      pvHtml += '<div class="an-h-bar-row"><div class="an-h-bar-label">'+pg.icon+' '+pg.label+'</div>'
+        +'<div class="an-h-bar-wrap"><div class="an-h-bar" style="width:'+w+'%"></div></div>'
+        +'<div class="an-h-bar-val">'+total+'</div></div>';
+    });
+
+    // Player vs Parent split
+    var totalViews = userTypeViews.player + userTypeViews.parent;
+    var playerPct = totalViews > 0 ? Math.round(userTypeViews.player/totalViews*100) : 0;
+    var parentPct = totalViews > 0 ? Math.round(userTypeViews.parent/totalViews*100) : 0;
+    pvHtml += '<div style="margin-top:16px;display:flex;gap:8px;">'
+      +'<div style="flex:1;background:var(--surface);border:1px solid var(--gold-border);border-radius:10px;padding:12px;text-align:center;">'
+      +'<div style="font-family:var(--font-display);font-size:28px;font-weight:900;font-style:italic;color:var(--gold-bright);">'+playerPct+'%</div>'
+      +'<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:3px;">Players</div>'
+      +'<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">'+fmtN(userTypeViews.player)+' views</div></div>'
+      +'<div style="flex:1;background:var(--surface);border:1px solid var(--gold-border);border-radius:10px;padding:12px;text-align:center;">'
+      +'<div style="font-family:var(--font-display);font-size:28px;font-weight:900;font-style:italic;color:var(--text-dim);">'+parentPct+'%</div>'
+      +'<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:3px;">Parents</div>'
+      +'<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">'+fmtN(userTypeViews.parent)+' views</div></div>'
+      +'</div>';
+
+    // Daily app opens
+    var dvDates = Object.keys(dailyViews).sort().slice(-14);
+    if(dvDates.length > 1){
+      var maxDV = Math.max.apply(null, dvDates.map(function(d){ return dailyViews[d]; }));
+      if(maxDV < 1) maxDV = 1;
+      pvHtml += '<div style="margin-top:16px;"><div style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Daily App Opens (14 Days)</div>'
+        +'<div class="an-chart" style="height:100px;">';
+      dvDates.forEach(function(d){
+        var h = Math.max(3, Math.round(dailyViews[d]/maxDV*100));
+        var dt = new Date(d+'T12:00:00');
+        var lbl = (dt.getMonth()+1)+'/'+dt.getDate();
+        pvHtml += '<div class="an-col"><div class="an-bar-v">'+dailyViews[d]+'</div>'
+          +'<div class="an-bar-wrap"><div class="an-bar" style="height:'+h+'%"></div></div>'
+          +'<div class="an-bar-l">'+lbl+'</div></div>';
+      });
+      pvHtml += '</div></div>';
+    }
+
+    pvCard.innerHTML = pvHtml;
+  });
+}
+
+// ════════════════════════════════════════
+// PAGE VIEW TRACKING
+// ════════════════════════════════════════
+var _trackCache = {};
+function trackPageView(page){
+  if(!page || page==='coach' || page==='analytics') return; // don't track coach-only pages
+  var p = pLoad();
+  if(!p || !p.name) return;
+  var userType = p.isCoach ? 'coach' : (p.isParent ? 'parent' : 'player');
+  var today = new Date().toISOString().slice(0,10);
+  var key = page+'|'+p.name+'|'+today;
+  if(_trackCache[key]) return; // max 1 per page per user per day
+  _trackCache[key] = true;
+  SB.from('logs').insert([{
+    name:'__TRACK__', date:today,
+    acts: page, pts:0, makes:0,
+    group: userType+'|'+p.name,
+    ts: Date.now()
+  }]);
+}
+
+async function fetchTrackingData(){
+  var all = [], from = 0, batchSize = 1000, done = false;
+  while(!done){
+    var r = await SB.from('logs').select('date,acts,group,ts')
+      .eq('name','__TRACK__')
+      .gte('date', SEASON_START)
+      .order('ts',{ascending:true})
+      .range(from, from + batchSize - 1);
+    if(r.error) break;
+    var batch = r.data || [];
+    all = all.concat(batch);
+    if(batch.length < batchSize) done = true;
+    else from += batchSize;
+  }
+  return all;
 }
 
 function fmtN(n){ return n.toLocaleString(); }
