@@ -772,7 +772,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v2.6</div>
+        <div class="logo-badge">Fairview Apaches · v3.0</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -1450,7 +1450,14 @@ window.addEventListener('load', function(){
     if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
     if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} buildActs(); if(coachOn)renderCoach(); return; }
     if(payload.new.name==='__TRACK__') return;
-    logs.push(payload.new); invalidateAggCache(); cSave(logs);
+    // Prevent double-count: skip if already pushed locally (same timestamp)
+    var isDupe = logs.some(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && l.date === payload.new.date; });
+    if(!isDupe){ logs.push(payload.new); } else {
+      // Replace local entry (no id) with server entry (has id) for future edits/deletes
+      var idx = logs.findIndex(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && !l.id; });
+      if(idx >= 0) logs[idx] = payload.new;
+    }
+    invalidateAggCache(); cSave(logs);
     debouncedRealtimeRender();
   }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
     if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
@@ -2021,47 +2028,8 @@ function renderCoach(){
   }
   feedHtml += '</div>';
 
-  var rosterHtml = '<div class="card"><div class="ct">Roster Manager</div>'
-    +'<div style="display:flex;gap:8px;margin-bottom:12px;">'
-    +'<input class="inp" id="add-player-inp" type="text" placeholder="Add player name..." style="flex:1;">'
-    +'<button class="btn btn-sm" style="width:auto;padding:12px 18px;" id="add-player-btn">+ Add</button>'
-    +'</div>';
-  if(!ROSTER.length){ rosterHtml += '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:10px 0;">No players on roster yet.</div>'; }
-  else {
-    rosterHtml += ROSTER.map(function(n){
-      var pLogs = logs.filter(function(l){ return l.name.toLowerCase()===n.toLowerCase(); });
-      var pts = pLogs.reduce(function(s,l){ return s+l.pts; },0);
-      return '<div class="pm-row"><div><div class="pm-name">'+n+'</div><div class="pm-sub">'+pts+' pts · '+pLogs.length+' sessions</div></div>'
-        +'<button class="del-btn" data-player="'+escapeAttr(n)+'">Remove</button></div>';
-    }).join('');
-  }
-  rosterHtml += '</div>';
-
-  var rows = pl.length ? pl.map(function(p,i){
-    var t = getTier(p.pts);
-    return '<tr>'
-      +'<td style="color:var(--text-muted);font-weight:700;font-family:var(--font-display);font-style:italic">'+(i+1)+'</td>'
-      +'<td style="font-weight:700;font-family:var(--font-display);font-size:15px;font-style:italic;text-transform:uppercase">'+p.name+'</td>'
-      +'<td style="color:var(--gold-bright);font-weight:900;font-family:var(--font-display);font-size:20px;font-style:italic">'+p.pts+'</td>'
-      +'<td>'+p.makes+'</td>'
-      +'<td style="color:var(--text-muted)">'+p.sessions+'</td>'
-      +'<td><span class="tb '+t.k+'" style="font-size:9px;padding:2px 6px">'+t.l+'</span></td>'
-      +'<td><button class="edit-btn" data-editplayer="'+escapeAttr(p.name)+'">Logs</button></td>'
-      +'</tr>';
-  }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No data yet</td></tr>';
-
-  var statsHtml = '<div class="card" style="padding:0;overflow:hidden"><div class="tbl-wrap"><table class="ct2">'
-    +'<thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Makes</th><th>Days</th><th>Tier</th><th></th></tr></thead>'
-    +'<tbody>'+rows+'</tbody></table></div></div>';
-
-  var quickHtml = '<div class="qs-grid">'
-    +'<div class="qs-cell"><div class="qs-n">'+pl.length+'</div><div class="qs-l">Players</div></div>'
-    +'<div class="qs-cell"><div class="qs-n">'+pl.reduce(function(s,p){return s+p.pts;},0)+'</div><div class="qs-l">Team Pts</div></div>'
-    +'<div class="qs-cell"><div class="qs-n">'+pl.reduce(function(s,p){return s+p.makes;},0)+'</div><div class="qs-l">Makes</div></div>'
-    +'<div class="qs-cell"><div class="qs-n">'+pl.filter(function(p){return p.pts>=100;}).length+'</div><div class="qs-l">Tier+</div></div>'
-    +'</div>';
-
   var actHtml = '<div style="display:flex;flex-direction:column;gap:10px;">'
+    +'<button class="btn" id="go-analytics-btn">📊 View Analytics & Data</button>'
     +'<button class="btn" id="award-bonus-btn">🏆 Award Bonus Points</button>'
     +'<button class="btn btn-green" id="export-csv-btn">📄 Export CSV</button>'
     +'<button class="btn '+(coachModeOn?'btn-red':'btn-dim')+'" id="toggle-override-btn">'+(coachModeOn?'✅ Coach Override ON (tap to disable)':'📋 Enable Coach Override (log any date)')+'</button>'
@@ -2069,7 +2037,7 @@ function renderCoach(){
     +'<button class="btn btn-red" id="reset-data-btn">⚠️ Reset All Data (New Season)</button>'
     +'</div>';
 
-  body.innerHTML = announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Leaderboard</span></div>'+quickHtml+statsHtml+'<div class="sec-div"><span>Roster & Actions</span></div>'+rosterHtml+actHtml;
+  body.innerHTML = announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Actions</span></div>'+actHtml;
 
   // Wire coach page events
   var oab = document.getElementById('open-announce-btn');
@@ -2081,17 +2049,9 @@ function renderCoach(){
   if(ob) ob.addEventListener('click', openBonusModal);
   var cb = document.getElementById('clear-bonus-btn');
   if(cb) cb.addEventListener('click', clearBonus);
-  var apb = document.getElementById('add-player-btn');
-  if(apb) apb.addEventListener('click', addPlayer);
-  var apin = document.getElementById('add-player-inp');
-  if(apin) apin.addEventListener('keydown', function(e){ if(e.key==='Enter') addPlayer(); });
 
-  document.querySelectorAll('.del-btn[data-player]').forEach(function(btn){
-    btn.addEventListener('click', function(){ deletePlayer(this.dataset.player); });
-  });
-  document.querySelectorAll('.edit-btn[data-editplayer]').forEach(function(btn){
-    btn.addEventListener('click', function(){ openEditPlayer(this.dataset.editplayer); });
-  });
+  var goAn = document.getElementById('go-analytics-btn');
+  if(goAn) goAn.addEventListener('click', function(){ goPage('analytics', document.getElementById('nav-analytics')); });
 
   var abtn = document.getElementById('award-bonus-btn');
   if(abtn) abtn.addEventListener('click', openAwardBonusModal);
@@ -2583,9 +2543,14 @@ function doSignOut(){
 // ════════════════════════════════════════
 function openAwardBonusModal(){
   var sel = document.getElementById('award-player-sel');
-  sel.innerHTML = ROSTER.length
-    ? ROSTER.map(function(n){ return '<option value="'+escapeAttr(n)+'">'+n+'</option>'; }).join('')
-    : '<option value="">— No roster players —</option>';
+  // Build list from all players who have logged + roster, deduplicated
+  var names = {};
+  ROSTER.forEach(function(n){ names[n.toLowerCase()] = n; });
+  aggPlayers(logs).forEach(function(p){ names[p.name.toLowerCase()] = p.name; });
+  var list = Object.values(names).sort();
+  sel.innerHTML = list.length
+    ? list.map(function(n){ return '<option value="'+escapeAttr(n)+'">'+n+'</option>'; }).join('')
+    : '<option value="">— No players yet —</option>';
   document.getElementById('award-reason').value = '';
   document.getElementById('award-pts-sel').value = '10';
   openModal('award-bonus-modal');
