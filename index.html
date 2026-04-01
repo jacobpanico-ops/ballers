@@ -11,6 +11,11 @@
 <link rel="icon" type="image/png" href="image_9e76e3e3.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://mljtsktkvztrqprfncwp.supabase.co">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://mljtsktkvztrqprfncwp.supabase.co">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" as="script">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -783,19 +788,15 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v3.5</div>
+        <div class="logo-badge">Fairview Apaches · v3.8</div>
       </div>
     </div>
     <div id="hdr-right"></div>
   </div>
 </header>
 
-<!-- LOG PAGE -->
-<div class="pg on" id="pg-log">
-  <div class="ph"><span class="ph-accent">Log</span> Your Work</div>
-  <div class="ps">What did you put in today?</div>
-  <div class="lb" id="loading-bar"></div>
-  <div class="wb" id="welcome-bar" style="display:none">
+<div style="max-width:480px;margin:0 auto;padding:0 18px;">
+  <div class="wb" id="welcome-bar" style="display:none;margin-top:8px;">
     <div>
       <div class="wn" id="wname"></div>
       <div class="ws" id="wemail"></div>
@@ -803,6 +804,13 @@ select.inp { cursor: pointer; }
     </div>
     <div class="wc" id="signout-btn">Sign out</div>
   </div>
+</div>
+
+<!-- LOG PAGE -->
+<div class="pg on" id="pg-log">
+  <div class="ph"><span class="ph-accent">Log</span> Your Work</div>
+  <div class="ps">What did you put in today?</div>
+  <div class="lb" id="loading-bar"></div>
   <div class="card" id="player-card">
     <div class="ct">Player</div>
     <select class="inp" id="player-select"><option value="">— Select your name —</option></select>
@@ -1087,7 +1095,6 @@ select.inp { cursor: pointer; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ════════════════════════════════════════
@@ -1508,15 +1515,18 @@ window.addEventListener('load', function(){
     SB.from('logs').select('id').limit(1).then(function(){});
   }
 
-  // Debounced re-render for realtime events
+  // Debounced re-render for realtime events — uses requestIdleCallback for smooth UI
   var _realtimeTimer = null;
+  var _rIC = window.requestIdleCallback || function(cb){ setTimeout(cb, 50); };
   function debouncedRealtimeRender(){
     if(_realtimeTimer) clearTimeout(_realtimeTimer);
     _realtimeTimer = setTimeout(function(){
-      renderLb();
-      if(coachOn) renderCoach();
-      var ss = document.getElementById('stats-sel').value.toLowerCase();
-      if(ss) renderStats();
+      _rIC(function(){
+        renderLb();
+        if(coachOn) renderCoach();
+        var ss = document.getElementById('stats-sel').value.toLowerCase();
+        if(ss) renderStats();
+      });
     }, 500);
   }
 
@@ -1989,14 +1999,12 @@ function renderLb(){
     if(lbMode==='makes') return b.makes-a.makes;
     return b.sessions-a.sessions;
   });
-  // Update subtitle
   var subtitle = document.getElementById('lb-ps');
   if(subtitle){
     if(lbGroup==='all') subtitle.textContent = 'Off-season standings — all groups';
     else subtitle.textContent = 'Off-season standings — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup);
   }
   var body = document.getElementById('lb-body');
-  // HS-only ultimate prize callout
   var hsBanner = document.getElementById('lb-hs-banner');
   if(!hsBanner){
     hsBanner = document.createElement('div');
@@ -2012,10 +2020,18 @@ function renderLb(){
     var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
     body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
   }
-  // Get current player name for YOU highlight
   var currentP = pLoad();
-  var me = (currentP && !currentP.isCoach) ? currentP.name.toLowerCase() : null;
-  body.innerHTML = pl.map(function(p,i){
+  var me = (currentP && !currentP.isCoach && !currentP.isParent) ? currentP.name.toLowerCase() : null;
+  var meIdx = -1;
+  if(me) pl.forEach(function(p,i){ if(p.name.toLowerCase()===me) meIdx=i; });
+
+  // Build visible rows: top 20 + YOU (if outside top 20)
+  var MAX_VISIBLE = 20;
+  var visibleIdxs = {};
+  for(var vi=0; vi<Math.min(MAX_VISIBLE, pl.length); vi++) visibleIdxs[vi]=true;
+  if(meIdx>=0) visibleIdxs[meIdx]=true;
+
+  function buildRow(p,i){
     var isMe = me && p.name.toLowerCase()===me;
     var rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
     var rl = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
@@ -2033,11 +2049,26 @@ function renderLb(){
       +'</div>'
       +'<div class="lbi"><div class="lbp">'+val+'</div><div class="lbm">'+sub+'</div></div>'
       +'</div>';
-  }).join('');
+  }
+
+  var html = '';
+  var idxList = Object.keys(visibleIdxs).map(Number).sort(function(a,b){return a-b;});
+  var prevIdx = -1;
+  idxList.forEach(function(idx){
+    if(prevIdx>=0 && idx>prevIdx+1){
+      html += '<div style="text-align:center;color:var(--text-muted);font-size:11px;padding:6px 0;letter-spacing:3px;">· · ·</div>';
+    }
+    html += buildRow(pl[idx], idx);
+    prevIdx = idx;
+  });
+  if(pl.length > MAX_VISIBLE && !visibleIdxs[pl.length-1]){
+    html += '<div style="text-align:center;color:var(--text-muted);font-size:11px;padding:8px 0;">'+pl.length+' players total</div>';
+  }
+
+  body.innerHTML = html;
   document.querySelectorAll('.lbrow').forEach(function(row){
     row.addEventListener('click', function(){ goStats(this.dataset.pname); });
   });
-  // Scroll the player's own row into view if off-screen
   if(me){
     var myRow = body.querySelector('.lbrow-me');
     if(myRow) setTimeout(function(){ myRow.scrollIntoView({block:'nearest',behavior:'smooth'}); }, 200);
@@ -2383,29 +2414,6 @@ function exportCSV(){
   a.click(); URL.revokeObjectURL(a.href); toast('📄 CSV downloaded!');
 }
 
-function exportExcel(){
-  if(typeof XLSX==='undefined'){ toast('Spreadsheet library loading, try again.'); return; }
-  var wb = XLSX.utils.book_new();
-  var logRows=[['Name','Date','Activities','Points','Makes','Logged At']];
-  [].concat(logs).sort(function(a,b){return(a.date||'').localeCompare(b.date||'')||a.ts-b.ts;}).forEach(function(l){
-    logRows.push([l.name,l.date,l.acts,l.pts,l.makes,new Date(l.ts).toLocaleString()]);
-  });
-  var wsLogs=XLSX.utils.aoa_to_sheet(logRows);
-  wsLogs['!cols']=[{wch:20},{wch:12},{wch:50},{wch:8},{wch:8},{wch:22}];
-  XLSX.utils.book_append_sheet(wb,wsLogs,'All Logs');
-  var pl=aggPlayers(logs).sort(function(a,b){return b.pts-a.pts;});
-  var sumRows=[['Rank','Player','Total Points','Total Makes','Sessions','Avg Pts/Session','Tier']];
-  pl.forEach(function(p,i){
-    var tier=getTier(p.pts);
-    sumRows.push([i+1,p.name,p.pts,p.makes,p.sessions,p.sessions>0?(p.pts/p.sessions).toFixed(1):0,tier.l.replace(/[^\x00-\x7F]/g,'').trim()]);
-  });
-  var wsSum=XLSX.utils.aoa_to_sheet(sumRows);
-  wsSum['!cols']=[{wch:6},{wch:20},{wch:14},{wch:14},{wch:10},{wch:18},{wch:18}];
-  XLSX.utils.book_append_sheet(wb,wsSum,'Player Summary');
-  XLSX.writeFile(wb,'HoopNHustle_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  toast('📊 Excel downloaded!');
-}
-
 // ════════════════════════════════════════
 // COACH AUTH & CONTROLS
 // ════════════════════════════════════════
@@ -2654,6 +2662,9 @@ function doSignOut(){
   document.getElementById('player-card').style.display='block';
   document.getElementById('hdr-right').innerHTML='';
   document.getElementById('nav-analytics').classList.remove('show');
+  // Restore nav buttons that may have been hidden for parent view
+  document.getElementById('nav-log').style.display='';
+  document.getElementById('nav-coach').style.display='';
   setupDate(); document.getElementById('si').style.display='flex';
 }
 
