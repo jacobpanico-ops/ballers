@@ -562,6 +562,16 @@ select.inp { cursor: pointer; }
 .cu p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
 .tbl-wrap { overflow-x: auto; border-radius: var(--radius); }
 #global-announce { position: relative; z-index: 10; }
+.offline-banner {
+  display: none; background: linear-gradient(135deg, rgba(90,82,72,0.3), rgba(90,82,72,0.15));
+  border: 1px solid rgba(90,82,72,0.5); border-radius: var(--radius);
+  padding: 12px 16px; margin: 8px 18px 0; max-width: 480px; margin-left: auto; margin-right: auto;
+  text-align: center; font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted);
+  animation: offline-pulse 2s ease-in-out infinite alternate;
+}
+.offline-banner.on { display: block; }
+@keyframes offline-pulse { 0% { opacity: 0.7; } 100% { opacity: 1; } }
 
 /* ═══ GROUP LEADERBOARD ═══ */
 .grp-lb-wrap { margin-bottom: 12px; }
@@ -765,6 +775,7 @@ select.inp { cursor: pointer; }
 
 <div class="ember-field" id="ember-field"></div>
 <div id="global-announce" style="display:none"></div>
+<div class="offline-banner" id="offline-banner">📡 Offline Mode — Data syncs when back online</div>
 
 <header class="hdr">
   <div class="hdr-in">
@@ -772,7 +783,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v3.0</div>
+        <div class="logo-badge">Fairview Apaches · v3.5</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -1356,24 +1367,76 @@ function grpLabel(g){ return GROUPS[g] ? GROUPS[g].label : 'Unknown'; }
 // ════════════════════════════════════════
 // CACHE & PERSIST
 // ════════════════════════════════════════
+function safeSave(key, val){
+  try{ localStorage.setItem(key, val); return true; }
+  catch(e){
+    // Quota exceeded — progressively clear caches and retry
+    try{ localStorage.removeItem('hhc_c'); }catch(e2){}
+    try{ localStorage.removeItem('hhc_offline_q'); }catch(e2){}
+    try{ localStorage.removeItem('hhc_announce_fb'); }catch(e2){}
+    try{ localStorage.removeItem('hhc_bonus_fb'); }catch(e2){}
+    try{ localStorage.setItem(key, val); return true; }catch(e3){ return false; }
+  }
+}
 function cSave(d){
   try{
-    // Only cache last 60 days of logs to stay within localStorage limits
     var cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 60);
     var cutStr = cutoff.toISOString().slice(0,10);
     var trimmed = d.filter(function(l){ return l.date >= cutStr; });
-    localStorage.setItem('hhc_c',JSON.stringify({t:Date.now(),d:trimmed}));
+    if(!safeSave('hhc_c',JSON.stringify({t:Date.now(),d:trimmed}))){
+      // Still failing — try with only 14 days
+      var cutoff2 = new Date(); cutoff2.setDate(cutoff2.getDate() - 14);
+      var cutStr2 = cutoff2.toISOString().slice(0,10);
+      var small = d.filter(function(l){ return l.date >= cutStr2; });
+      safeSave('hhc_c',JSON.stringify({t:Date.now(),d:small}));
+    }
   }catch(e){
-    // localStorage full or unavailable — clear stale cache
     try{ localStorage.removeItem('hhc_c'); }catch(e2){}
   }
 }
-function cLoad(){try{var c=JSON.parse(localStorage.getItem('hhc_c')||'null');if(c&&Date.now()-c.t<300000)return c.d;}catch(e){}return null;}
-function pSave(p){try{localStorage.setItem('hhc_p',JSON.stringify(p));}catch(e){}}
+function cLoad(ignoreExpiry){try{var c=JSON.parse(localStorage.getItem('hhc_c')||'null');if(c&&(ignoreExpiry||Date.now()-c.t<300000))return c.d;}catch(e){}return null;}
+function pSave(p){safeSave('hhc_p',JSON.stringify(p));}
 function pLoad(){try{return JSON.parse(localStorage.getItem('hhc_p')||'null');}catch(e){return null;}}
-function saveRoster(){try{localStorage.setItem('hhc_roster',JSON.stringify(ROSTER));}catch(e){}}
+function saveRoster(){safeSave('hhc_roster',JSON.stringify(ROSTER));}
 function loadRoster(){try{var r=JSON.parse(localStorage.getItem('hhc_roster')||'null');if(Array.isArray(r))ROSTER=r;}catch(e){}}
+
+// Offline queue
+function queueOfflineLog(entry){
+  try{
+    var q=JSON.parse(localStorage.getItem('hhc_offline_q')||'[]');
+    q.push(entry);
+    safeSave('hhc_offline_q',JSON.stringify(q));
+  }catch(e){}
+}
+function getOfflineQueue(){
+  try{return JSON.parse(localStorage.getItem('hhc_offline_q')||'[]');}catch(e){return [];}
+}
+function clearOfflineQueue(){
+  try{localStorage.removeItem('hhc_offline_q');}catch(e){}
+}
+async function syncOfflineQueue(){
+  var q=getOfflineQueue();
+  if(!q.length) return;
+  var failed=[];
+  for(var i=0;i<q.length;i++){
+    var res=await SB.from('logs').insert([q[i]]);
+    if(res.error) failed.push(q[i]);
+  }
+  if(failed.length){
+    safeSave('hhc_offline_q',JSON.stringify(failed));
+    toast('⚠️ '+failed.length+' log(s) failed to sync');
+  } else {
+    clearOfflineQueue();
+    if(q.length) toast('✅ '+q.length+' offline log(s) synced!');
+  }
+}
+
+// Offline announce/bonus fallback
+function saveAnnounceFallback(){safeSave('hhc_announce_fb',announcement);}
+function loadAnnounceFallback(){try{announcement=localStorage.getItem('hhc_announce_fb')||'';}catch(e){}}
+function saveBonusFallback(){safeSave('hhc_bonus_fb',JSON.stringify(bonusEvent));}
+function loadBonusFallback(){try{var b=JSON.parse(localStorage.getItem('hhc_bonus_fb')||'null');bonusEvent=b;}catch(e){}}
 
 // ════════════════════════════════════════
 // DATE HELPERS
@@ -1418,21 +1481,32 @@ window.addEventListener('load', function(){
     else { applyPlayer(p); }
   }
 
-  var cached = cLoad();
-  if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); renderLb(); hideLb(); }
-
-  fetchLogs().then(function(){
-    renderLb();
+  if(!navigator.onLine){
+    // ── OFFLINE MODE ──
+    document.getElementById('offline-banner').classList.add('on');
+    var cached = cLoad(true); // load without expiry
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); }
+    loadAnnounceFallback(); showAnnouncement();
+    loadBonusFallback(); buildActs();
+    renderLb(); hideLb();
     if(coachOn) renderCoach();
-    hideLb();
-  });
+  } else {
+    // ── ONLINE MODE ──
+    var cached = cLoad();
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); renderLb(); hideLb(); }
 
-  // Load announcement and bonus event from Supabase (all users see them)
-  loadAnnounceFromDB();
-  loadBonusFromDB();
+    fetchLogs().then(function(){
+      renderLb();
+      if(coachOn) renderCoach();
+      hideLb();
+    });
 
-  // Warm up the Supabase connection so first insert is never cold
-  SB.from('logs').select('id').limit(1).then(function(){});
+    loadAnnounceFromDB();
+    loadBonusFromDB();
+    syncOfflineQueue();
+
+    SB.from('logs').select('id').limit(1).then(function(){});
+  }
 
   // Debounced re-render for realtime events
   var _realtimeTimer = null;
@@ -1446,35 +1520,50 @@ window.addEventListener('load', function(){
     }, 500);
   }
 
-  SB.channel('hhc').on('postgres_changes',{event:'INSERT',schema:'public',table:'logs'},function(payload){
-    if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
-    if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} buildActs(); if(coachOn)renderCoach(); return; }
-    if(payload.new.name==='__TRACK__') return;
-    // Prevent double-count: skip if already pushed locally (same timestamp)
-    var isDupe = logs.some(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && l.date === payload.new.date; });
-    if(!isDupe){ logs.push(payload.new); } else {
-      // Replace local entry (no id) with server entry (has id) for future edits/deletes
-      var idx = logs.findIndex(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && !l.id; });
-      if(idx >= 0) logs[idx] = payload.new;
-    }
-    invalidateAggCache(); cSave(logs);
-    debouncedRealtimeRender();
-  }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
-    if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; showAnnouncement(); return; }
-    if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} buildActs(); if(coachOn)renderCoach(); return; }
-    if(payload.new.name==='__TRACK__') return;
-    var idx = logs.findIndex(function(l){ return l.id===payload.new.id; });
-    if(idx>=0) logs[idx] = payload.new; else logs.push(payload.new);
-    invalidateAggCache(); cSave(logs);
-    debouncedRealtimeRender();
-  }).on('postgres_changes',{event:'DELETE',schema:'public',table:'logs'},function(payload){
-    if(payload.old.name==='__ANNOUNCE__'){ announcement=''; showAnnouncement(); return; }
-    if(payload.old.name==='__BONUS__'){ bonusEvent=null; buildActs(); if(coachOn)renderCoach(); return; }
-    if(payload.old.name==='__TRACK__') return;
-    logs = logs.filter(function(l){ return l.id!==payload.old.id; });
-    invalidateAggCache(); cSave(logs);
-    debouncedRealtimeRender();
-  }).subscribe();
+  if(navigator.onLine){
+    SB.channel('hhc').on('postgres_changes',{event:'INSERT',schema:'public',table:'logs'},function(payload){
+      if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
+      if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.new.name==='__TRACK__') return;
+      var isDupe = logs.some(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && l.date === payload.new.date; });
+      if(!isDupe){ logs.push(payload.new); } else {
+        var idx = logs.findIndex(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && !l.id; });
+        if(idx >= 0) logs[idx] = payload.new;
+      }
+      invalidateAggCache(); cSave(logs);
+      debouncedRealtimeRender();
+    }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
+      if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
+      if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.new.name==='__TRACK__') return;
+      var idx = logs.findIndex(function(l){ return l.id===payload.new.id; });
+      if(idx>=0) logs[idx] = payload.new; else logs.push(payload.new);
+      invalidateAggCache(); cSave(logs);
+      debouncedRealtimeRender();
+    }).on('postgres_changes',{event:'DELETE',schema:'public',table:'logs'},function(payload){
+      if(payload.old.name==='__ANNOUNCE__'){ announcement=''; saveAnnounceFallback(); showAnnouncement(); return; }
+      if(payload.old.name==='__BONUS__'){ bonusEvent=null; saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.old.name==='__TRACK__') return;
+      logs = logs.filter(function(l){ return l.id!==payload.old.id; });
+      invalidateAggCache(); cSave(logs);
+      debouncedRealtimeRender();
+    }).subscribe();
+  }
+
+  // ── Online/Offline listeners ──
+  window.addEventListener('online', function(){
+    document.getElementById('offline-banner').classList.remove('on');
+    toast('✅ Back online — syncing...');
+    syncOfflineQueue().then(function(){
+      fetchLogs().then(function(){ renderLb(); if(coachOn) renderCoach(); });
+      loadAnnounceFromDB();
+      loadBonusFromDB();
+    });
+  });
+  window.addEventListener('offline', function(){
+    document.getElementById('offline-banner').classList.add('on');
+    toast('📡 You are offline');
+  });
 });
 
 function hideLb(){ document.getElementById('loading-bar').style.display='none'; }
@@ -1650,7 +1739,7 @@ function buildActs(){
   if(bonusEvent){
     var bact = ACTS.find(function(a){ return a.id===bonusEvent.actId; });
     bd.style.display = 'block';
-    bd.innerHTML = '<div class="announce-banner"><div class="announce-icon">⚡</div><div class="announce-text"><div class="announce-title">Bonus Event Active</div><div class="announce-body"><strong style="color:var(--gold-bright)">'+(bonusEvent.label||'Bonus Week')+'</strong> — '+bonusEvent.multiplier+'× pts on '+(bact?bact.name:'selected activity')+(bonusEvent.expires?' until '+fmtDate(bonusEvent.expires):'')+'</div></div></div>';
+    bd.innerHTML = '<div class="announce-banner"><div class="announce-icon">⚡</div><div class="announce-text"><div class="announce-title">Bonus Event Active</div><div class="announce-body"><strong style="color:var(--gold-bright)">'+escapeHtml(bonusEvent.label||'Bonus Week')+'</strong> — '+bonusEvent.multiplier+'× pts on '+(bact?escapeHtml(bact.name):'selected activity')+(bonusEvent.expires?' until '+fmtDate(bonusEvent.expires):'')+'</div></div></div>';
   } else { bd.style.display = 'none'; }
 }
 
@@ -1710,24 +1799,27 @@ function calcPts(){
 // ════════════════════════════════════════
 // SUBMIT LOG
 // ════════════════════════════════════════
+var submitInFlight = false;
 async function submitLog(){
+  if(submitInFlight){ toast('Save in progress...'); return; }
+  submitInFlight = true;
   var name = document.getElementById('player-select').value.trim();
   var date = document.getElementById('log-date').value;
-  if(!name || name==='__other__'){ toast('Select a player first!'); return; }
-  if(!date){ toast('Pick a date!'); return; }
+  if(!name || name==='__other__'){ toast('Select a player first!'); submitInFlight=false; return; }
+  if(!date){ toast('Pick a date!'); submitInFlight=false; return; }
   if(!coachModeOn){
     var w = weekWin();
     if(date<w.min || date>w.max){
       toast('⛔ Date outside the 7-day window!');
       document.getElementById('date-locked-msg').style.display = 'block';
-      document.getElementById('log-btn').disabled = true; return;
+      document.getElementById('log-btn').disabled = true; submitInFlight=false; return;
     }
   }
-  if(!Object.values(actSel).some(Boolean)){ toast('Select at least one activity!'); return; }
+  if(!Object.values(actSel).some(Boolean)){ toast('Select at least one activity!'); submitInFlight=false; return; }
   // Check daily cap: block if player already hit 10 pts for this date
   var existingToday = logs.filter(function(l){ return l.name.toLowerCase()===name.toLowerCase() && l.date===date; });
   var existingPts = existingToday.reduce(function(s,l){ return s+l.pts; }, 0);
-  if(!coachModeOn && existingPts >= 10){ toast('You already hit the 10 pt daily cap for '+fmtDate(date)+'!'); return; }
+  if(!coachModeOn && existingPts >= 10){ toast('You already hit the 10 pt daily cap for '+fmtDate(date)+'!'); submitInFlight=false; return; }
   var pts = calcPts();
   // Enforce remaining cap room
   if(!coachModeOn && existingPts + pts > 10){ pts = Math.max(0, 10 - existingPts); }
@@ -1738,16 +1830,30 @@ async function submitLog(){
   btn.disabled = true; btn.textContent = 'Saving...';
   var currentP = pLoad();
   var payload = [{name:name,date:date,acts:acts,pts:pts,makes:makes,group:(currentP&&currentP.group)||'',ts:Date.now()}];
+
+  if(!navigator.onLine){
+    queueOfflineLog(payload[0]);
+    logs.push(payload[0]); invalidateAggCache(); cSave(logs);
+    btn.disabled = false; btn.textContent = 'Log It 🏀';
+    actSel = {}; ctrs = {}; makes = 0;
+    document.getElementById('makes-disp').textContent = '0';
+    document.querySelectorAll('.ab').forEach(function(b){ b.classList.remove('on'); });
+    document.getElementById('ctr-card').style.display = 'none';
+    calcPts(); setupDate(); renderLb();
+    if(coachOn) renderCoach();
+    if(coachModeOn){ toast('Logged offline for '+name+' — will sync later ✅'); }
+    else { showSplash(name, pts); }
+    submitInFlight=false; return;
+  }
+
   var res = await SB.from('logs').insert(payload);
   if(res.error){
-    // Cold start — wait 1.8s and retry once silently
     btn.textContent = 'Retrying...';
     await new Promise(function(r){ setTimeout(r, 1800); });
     res = await SB.from('logs').insert(payload);
   }
   btn.disabled = false; btn.textContent = 'Log It 🏀';
-  if(res.error){ toast('Save failed — check connection'); return; }
-  // Push to local logs so splash/badges see the new entry immediately
+  if(res.error){ toast('Save failed — check connection'); submitInFlight=false; return; }
   logs.push(payload[0]); invalidateAggCache(); cSave(logs);
   actSel = {}; ctrs = {}; makes = 0;
   document.getElementById('makes-disp').textContent = '0';
@@ -1757,6 +1863,7 @@ async function submitLog(){
   if(coachOn) renderCoach();
   if(coachModeOn){ toast('Logged for '+name+' ✅'); }
   else { showSplash(name, pts); }
+  submitInFlight=false;
 }
 
 // ════════════════════════════════════════
@@ -1811,7 +1918,7 @@ function renderStats(){
       var rc = idx===0?'r1':idx===1?'r2':idx===2?'r3':'';
       rows += '<div class="grp-row '+(isMe?'me ':'')+rc+'">'
         +'<div class="grp-rank">'+rankLabel+'</div>'
-        +'<div class="grp-name">'+peer.name+'</div>'
+        +'<div class="grp-name">'+escapeHtml(peer.name)+'</div>'
         +(isMe?'<span class="grp-you">YOU</span>':'')
         +'<div class="grp-pts">'+peer.pts+'</div>'
         +'</div>';
@@ -1828,7 +1935,7 @@ function renderStats(){
   }
 
   body.innerHTML='<div class="sh">'
-    +'<div class="sn">'+dn+'</div>'
+    +'<div class="sn">'+escapeHtml(dn)+'</div>'
     +'<div class="sb">'+tp+'</div>'
     +'<div class="sl">Total Points</div>'
     +'<span class="tb '+tier.k+'">'+tier.l+'</span>'
@@ -1850,7 +1957,7 @@ function renderStats(){
     +'</div>'
     +(function(){try{return renderBadgesHtml(name, pl, logs);}catch(e){console.error('Badge render error:',e);return '';}})()
     +'<div class="card"><div class="ct">Recent Activity</div>'
-    +rec.map(function(l){return'<div class="lr"><div class="ld">'+fmtDate(l.date)+'</div><div class="la">'+l.acts+'</div><div class="lp">+'+l.pts+'</div></div>';}).join('')
+    +rec.map(function(l){return'<div class="lr"><div class="ld">'+fmtDate(l.date)+'</div><div class="la">'+escapeHtml(l.acts)+'</div><div class="lp">+'+l.pts+'</div></div>';}).join('')
     +'</div>';
   setTimeout(function(){ var pf=document.getElementById('st-pf'); if(pf) pf.style.width=pct+'%'; }, 100);
 }
@@ -1918,7 +2025,7 @@ function renderLb(){
     return '<div class="lbrow '+(isMe?'lbrow-me ':'')+rc+'" data-pname="'+escapeAttr(p.name)+'">'
       +'<div class="lbr">'+rl+'</div>'
       +'<div style="flex:1;padding:0 10px">'
-        +'<div class="lbn">'+p.name+(isMe?' <span class="grp-you">YOU</span>':'')+'</div>'
+        +'<div class="lbn">'+escapeHtml(p.name)+(isMe?' <span class="grp-you">YOU</span>':'')+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px">'
           +'<span class="tb '+tier.k+'" style="font-size:9px;padding:2px 8px;margin:0">'+tier.l+'</span>'
           +(lbGroup==='all' && p.group ? grpBadge(p.group) : '')
@@ -1937,8 +2044,8 @@ function renderLb(){
   }
 }
 
-function escapeAttr(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function goStats(name){
   var ss = document.getElementById('stats-sel');
@@ -1996,7 +2103,7 @@ function renderCoach(){
   if(bonusEvent){
     var bact = ACTS.find(function(a){ return a.id===bonusEvent.actId; });
     bonusHtml += '<div class="bonus-badge">'
-      +'<div><div class="bonus-name">'+(bonusEvent.label||'Bonus Event')+'</div>'
+      +'<div><div class="bonus-name">'+escapeHtml(bonusEvent.label||'Bonus Event')+'</div>'
       +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'+(bact?bact.name:'')+(bonusEvent.expires?' · expires '+fmtDate(bonusEvent.expires):'')+'</div></div>'
       +'<div class="bonus-multi">'+bonusEvent.multiplier+'×</div></div>'
       +'<button class="btn btn-red btn-sm" style="margin-top:10px" id="clear-bonus-btn">Remove Bonus</button>';
@@ -2013,8 +2120,8 @@ function renderCoach(){
       var entry = loggedNames[n.toLowerCase()];
       return '<div class="feed-row">'
         +'<div class="feed-dot'+(entry?'':' absent')+'"></div>'
-        +'<div><div class="feed-name">'+n+'</div>'
-        +(entry?'<div class="feed-act">'+entry.acts+'</div>':'<div class="feed-act" style="color:var(--text-muted)">Not logged today</div>')
+        +'<div><div class="feed-name">'+escapeHtml(n)+'</div>'
+        +(entry?'<div class="feed-act">'+escapeHtml(entry.acts)+'</div>':'<div class="feed-act" style="color:var(--text-muted)">Not logged today</div>')
         +'</div>'
         +(entry?'<div class="feed-pts">+'+entry.pts+'</div>':'<div style="color:var(--text-muted);font-size:12px;">—</div>')
         +'</div>';
@@ -2022,7 +2129,7 @@ function renderCoach(){
     var nonRoster = loggedToday.filter(function(l){ return !ROSTER.some(function(n){ return n.toLowerCase()===l.name.toLowerCase(); }); });
     if(nonRoster.length){
       feedHtml += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gold-border)"><div style="font-size:10px;letter-spacing:2px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Walk-Ins</div>';
-      nonRoster.forEach(function(l){ feedHtml += '<div class="feed-row"><div class="feed-dot"></div><div class="feed-name">'+l.name+'</div><div class="feed-pts">+'+l.pts+'</div></div>'; });
+      nonRoster.forEach(function(l){ feedHtml += '<div class="feed-row"><div class="feed-dot"></div><div class="feed-name">'+escapeHtml(l.name)+'</div><div class="feed-pts">+'+l.pts+'</div></div>'; });
       feedHtml += '</div>';
     }
   }
@@ -2075,12 +2182,12 @@ function openEditPlayer(name){
   var pLogs = [].concat(logs.filter(function(l){ return l.name.toLowerCase()===name.toLowerCase(); })).sort(function(a,b){ return b.ts-a.ts; });
   var modal = document.getElementById('edit-modal');
   var box = modal.querySelector('.modal-box');
-  box.innerHTML = '<div class="modal-title">'+name+'\'s Logs</div>'
+  box.innerHTML = '<div class="modal-title">'+escapeHtml(name)+'\'s Logs</div>'
     +'<div class="modal-sub">Edit or delete individual entries.</div>'
     +(pLogs.length===0?'<div style="color:var(--text-muted);text-align:center;padding:20px;">No logs found.</div>':'')
     +pLogs.map(function(l){
       return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gold-border)">'
-        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+fmtDate(l.date)+'</div><div style="font-size:11px;color:var(--text-muted)">'+l.acts+'</div></div>'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+fmtDate(l.date)+'</div><div style="font-size:11px;color:var(--text-muted)">'+escapeHtml(l.acts)+'</div></div>'
         +'<div style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--gold-bright);font-style:italic;min-width:36px;text-align:right">'+l.pts+'</div>'
         +'<button class="edit-btn" data-editlog="'+l.id+'">Edit</button>'
         +'<button class="del-btn" data-dellog="'+l.id+'">Del</button>'
@@ -2108,9 +2215,9 @@ function openInlineEdit(logId){
   box.innerHTML = '<div class="modal-title">Edit Entry</div>'
     +'<div class="modal-sub">Adjust this log entry.</div>'
     +'<input type="hidden" id="edit-log-id" value="'+logId+'">'
-    +'<div class="modal-row"><label class="modal-lbl">Player Name</label><input class="inp" id="edit-name" type="text" value="'+l.name+'"></div>'
+    +'<div class="modal-row"><label class="modal-lbl">Player Name</label><input class="inp" id="edit-name" type="text" value="'+escapeAttr(l.name)+'"></div>'
     +'<div class="modal-row"><label class="modal-lbl">Date</label><input class="inp" id="edit-date" type="date" value="'+l.date+'"></div>'
-    +'<div class="modal-row"><label class="modal-lbl">Activities</label><input class="inp" id="edit-acts" type="text" value="'+l.acts.replace(/"/g,'&quot;')+'"></div>'
+    +'<div class="modal-row"><label class="modal-lbl">Activities</label><input class="inp" id="edit-acts" type="text" value="'+escapeAttr(l.acts)+'"></div>'
     +'<div class="modal-row"><label class="modal-lbl">Points (0–10)</label><input class="inp" id="edit-pts" type="number" min="0" max="10" value="'+l.pts+'"></div>'
     +'<div class="modal-row"><label class="modal-lbl">Makes</label><input class="inp" id="edit-makes" type="number" min="0" value="'+l.makes+'"></div>'
     +'<div class="modal-btns">'
@@ -2194,6 +2301,7 @@ async function loadBonusFromDB(){
       else { bonusEvent = null; SB.from('logs').delete().eq('name', _BONUS_KEY); }
     } catch(e){ bonusEvent = null; }
   } else { bonusEvent = null; }
+  saveBonusFallback();
   buildActs();
 }
 
@@ -2227,6 +2335,7 @@ async function loadAnnounceFromDB(){
   var res = await SB.from('logs').select('acts').eq('name', _ANNOUNCE_KEY).order('ts',{ascending:false}).limit(1);
   if(res.data && res.data.length > 0){ announcement = res.data[0].acts || ''; }
   else { announcement = ''; }
+  saveAnnounceFallback();
   showAnnouncement();
 }
 function showAnnouncement(){
@@ -2302,9 +2411,14 @@ function exportExcel(){
 // ════════════════════════════════════════
 async function tryPin(){
   var p = document.getElementById('cpin').value;
+  document.getElementById('cpin').value='';
   var valid = await verifyPin(p);
-  if(valid){ coachOn=true; renderCoach(); }
-  else { toast('Wrong PIN!'); document.getElementById('cpin').value=''; }
+  p='';
+  if(valid){
+    try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
+    coachOn=true; renderCoach();
+  }
+  else { toast('Wrong PIN!'); }
 }
 function lockCoach(){ coachOn=false; coachModeOn=false; document.getElementById('nav-analytics').classList.remove('show'); setupDate(); renderCoach(); }
 function toggleCoachMode(){ coachModeOn=!coachModeOn; setupDate(); renderCoach(); toast(coachModeOn?'Override ON — any date allowed':'Override OFF'); }
@@ -2487,8 +2601,13 @@ async function doCoachIn(){
   if(!cn){ err.textContent='Enter your name'; return; }
   err.textContent='Checking...';
   var valid = await verifyPin(cp);
-  if(!valid){ err.textContent='Wrong PIN — try again'; document.getElementById('si-cp').value=''; return; }
+  // Clear PIN from DOM and memory immediately
+  document.getElementById('si-cp').value='';
+  cp='';
+  if(!valid){ err.textContent='Wrong PIN — try again'; return; }
   err.textContent='';
+  // Scrub any query params from URL to prevent PIN leaking in history
+  try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
   var p = {first:cn,last:'',email:'coach',name:cn,isCoach:true};
   pSave(p); document.getElementById('si').style.display='none'; enterCoachMode(cn);
 }
@@ -2807,7 +2926,7 @@ function renderAnalytics(){
     var gl = p.group==='hs'?'HS':p.group==='jh'?'JH':p.group==='yth'?'YTH':'—';
     var rk = i<3 ? ['🥇','🥈','🥉'][i] : String(i+1);
     html += '<tr><td class="an-rank '+(i<3?'top':'')+'">'+rk+'</td>'
-      +'<td class="an-pname">'+p.name+'</td>'
+      +'<td class="an-pname">'+escapeHtml(p.name)+'</td>'
       +'<td><span class="grp-badge '+gc+'">'+gl+'</span></td>'
       +'<td class="an-pval">'+fmtN(p.pts)+'</td>'
       +'<td class="an-pdim">'+fmtN(p.makes)+'</td>'
@@ -2823,7 +2942,7 @@ function renderAnalytics(){
   html += '<div class="card"><div class="ct">Activity Breakdown</div>';
   if(activities.length){
     activities.slice(0,8).forEach(function(a){
-      html += '<div class="an-act-row"><div class="an-act-name">'+a.name+'</div>'
+      html += '<div class="an-act-row"><div class="an-act-name">'+escapeHtml(a.name)+'</div>'
         +'<div class="an-act-pct">'+a.pct+'%</div>'
         +'<div class="an-act-count">'+fmtN(a.count)+'</div></div>';
     });
@@ -2834,7 +2953,7 @@ function renderAnalytics(){
   html += '<div class="card"><div class="ct">Longest Streaks 🔥</div>';
   if(streaks.length){
     streaks.forEach(function(s){
-      html += '<div class="an-streak-row"><div class="an-streak-name">'+s.name+'</div>'
+      html += '<div class="an-streak-row"><div class="an-streak-name">'+escapeHtml(s.name)+'</div>'
         +'<div><span class="an-streak-val">'+s.streak+'</span><span class="an-streak-unit">days</span></div></div>';
     });
   } else { html += '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:13px;">No streak data yet.</div>'; }
