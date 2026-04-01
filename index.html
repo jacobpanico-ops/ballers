@@ -413,6 +413,60 @@ select.inp { cursor: pointer; }
 .lbp { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--gold-bright); line-height: 1; font-style: italic; }
 .lbm { font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
+/* ── YOU row — animated glow ── */
+.lbrow-me {
+  background: linear-gradient(135deg, rgba(200,150,12,0.22), rgba(200,150,12,0.08)) !important;
+  border-color: var(--gold-bright) !important;
+  box-shadow: 0 0 24px rgba(255,160,0,0.18), 0 0 48px rgba(255,140,0,0.06) !important;
+  animation: me-glow 2.5s ease-in-out infinite alternate;
+}
+@keyframes me-glow {
+  0% { box-shadow: 0 0 16px rgba(255,160,0,0.12), 0 0 32px rgba(255,140,0,0.04); }
+  100% { box-shadow: 0 0 28px rgba(255,160,0,0.25), 0 0 56px rgba(255,140,0,0.1); }
+}
+.lbrow-me::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 50%, rgba(255,200,0,0.08), transparent 60%);
+  pointer-events: none;
+}
+.lb-you-tag {
+  font-family: var(--font-display); font-size: 9px; font-weight: 900;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--black);
+  background: linear-gradient(135deg, var(--gold-bright), var(--ember2));
+  padding: 2px 7px; border-radius: 4px; margin-left: 6px;
+  box-shadow: 0 0 8px rgba(255,180,0,0.3);
+}
+
+/* ── Movement indicators ── */
+.lb-move { font-family: var(--font-display); font-size: 11px; font-weight: 800; margin-left: 6px; display: inline-flex; align-items: center; gap: 2px; }
+.lb-move-up { color: #4ADE80; }
+.lb-move-down { color: #F87171; }
+.lb-move-new { color: var(--gold); font-size: 9px; letter-spacing: 1px; }
+
+/* ── Ellipsis separator ── */
+.lb-ellipsis {
+  text-align: center; padding: 10px 0; color: var(--text-muted);
+  font-family: var(--font-display); font-size: 16px; letter-spacing: 6px; font-weight: 900;
+  opacity: 0.4;
+}
+
+/* ── Weekly Jumpers ── */
+.lb-jumpers { margin-top: 16px; }
+.lb-jumpers-title {
+  font-family: var(--font-display); font-size: 10px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+}
+.lb-jumpers-title::before, .lb-jumpers-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-border), transparent); }
+.lb-jumper-row {
+  display: flex; align-items: center; padding: 10px 14px; border-radius: 9px;
+  margin-bottom: 5px; background: var(--surface2); border: 1px solid var(--gold-border);
+}
+.lb-jumper-rank { font-family: var(--font-display); font-size: 16px; font-weight: 900; font-style: italic; min-width: 28px; color: var(--text-muted); }
+.lb-jumper-name { font-family: var(--font-display); font-size: 14px; font-weight: 800; font-style: italic; text-transform: uppercase; flex: 1; padding: 0 8px; }
+.lb-jumper-delta { font-family: var(--font-display); font-size: 18px; font-weight: 900; font-style: italic; color: #4ADE80; }
+.lb-total-count { text-align: center; color: var(--text-muted); font-size: 11px; padding: 8px 0 4px; }
+
 /* ═══ COACH TABLE ═══ */
 .ct2 { width: 100%; border-collapse: collapse; font-size: 13px; }
 .ct2 th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); padding: 10px; text-align: left; border-bottom: 1px solid var(--gold-border); }
@@ -610,9 +664,6 @@ select.inp { cursor: pointer; }
 .gft.on-jh  { background: rgba(200,200,200,0.15); color: #C8C8C8;           border-color: rgba(200,200,200,0.4); }
 .gft.on-yth { background: rgba(160,160,160,0.15); color: #AAAAAA;           border-color: rgba(160,160,160,0.4); }
 
-/* ═══ MY ROW HIGHLIGHT ═══ */
-.lbrow-me { background: linear-gradient(135deg, rgba(200,150,12,0.18), rgba(200,150,12,0.06)) !important; border-color: var(--gold-bright) !important; box-shadow: 0 0 20px rgba(255,140,0,0.14) !important; }
-
 /* ═══ PODIUM ENTRANCE ANIMATION ═══ */
 @keyframes podium-drop {
   0%   { opacity: 0; transform: translateY(-12px) scale(0.97); }
@@ -788,7 +839,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v3.8</div>
+        <div class="logo-badge">Fairview Apaches · v4.1</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -1492,7 +1543,7 @@ window.addEventListener('load', function(){
     // ── OFFLINE MODE ──
     document.getElementById('offline-banner').classList.add('on');
     var cached = cLoad(true); // load without expiry
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); }
     loadAnnounceFallback(); showAnnouncement();
     loadBonusFallback(); buildActs();
     renderLb(); hideLb();
@@ -1500,7 +1551,7 @@ window.addEventListener('load', function(){
   } else {
     // ── ONLINE MODE ──
     var cached = cLoad();
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); renderLb(); hideLb(); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); renderLb(); hideLb(); }
 
     fetchLogs().then(function(){
       renderLb();
@@ -1534,7 +1585,7 @@ window.addEventListener('load', function(){
     SB.channel('hhc').on('postgres_changes',{event:'INSERT',schema:'public',table:'logs'},function(payload){
       if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
-      if(payload.new.name==='__TRACK__') return;
+      if(payload.new.name==='__TRACK__' || payload.new.name==='__PROFILE__') return;
       var isDupe = logs.some(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && l.date === payload.new.date; });
       if(!isDupe){ logs.push(payload.new); } else {
         var idx = logs.findIndex(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && !l.id; });
@@ -1545,7 +1596,7 @@ window.addEventListener('load', function(){
     }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
       if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
-      if(payload.new.name==='__TRACK__') return;
+      if(payload.new.name==='__TRACK__' || payload.new.name==='__PROFILE__') return;
       var idx = logs.findIndex(function(l){ return l.id===payload.new.id; });
       if(idx>=0) logs[idx] = payload.new; else logs.push(payload.new);
       invalidateAggCache(); cSave(logs);
@@ -1553,7 +1604,7 @@ window.addEventListener('load', function(){
     }).on('postgres_changes',{event:'DELETE',schema:'public',table:'logs'},function(payload){
       if(payload.old.name==='__ANNOUNCE__'){ announcement=''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.old.name==='__BONUS__'){ bonusEvent=null; saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
-      if(payload.old.name==='__TRACK__') return;
+      if(payload.old.name==='__TRACK__' || payload.old.name==='__PROFILE__') return;
       logs = logs.filter(function(l){ return l.id!==payload.old.id; });
       invalidateAggCache(); cSave(logs);
       debouncedRealtimeRender();
@@ -1727,7 +1778,7 @@ async function fetchLogs(){
     if(batch.length < batchSize) done = true;
     else from += batchSize;
   }
-  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__'; }); invalidateAggCache(); cSave(logs);
+  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); invalidateAggCache(); cSave(logs);
 }
 
 // ════════════════════════════════════════
@@ -2025,13 +2076,32 @@ function renderLb(){
   var meIdx = -1;
   if(me) pl.forEach(function(p,i){ if(p.name.toLowerCase()===me) meIdx=i; });
 
-  // Build visible rows: top 20 + YOU (if outside top 20)
-  var MAX_VISIBLE = 20;
-  var visibleIdxs = {};
-  for(var vi=0; vi<Math.min(MAX_VISIBLE, pl.length); vi++) visibleIdxs[vi]=true;
-  if(meIdx>=0) visibleIdxs[meIdx]=true;
+  // ── Calculate 7-day-ago ranks for movement indicators ──
+  var sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate()-7);
+  var sevenStr = sevenAgo.toISOString().slice(0,10);
+  var oldLogs = logs.filter(function(l){ return l.date < sevenStr; });
+  var oldRanks = {};
+  if(oldLogs.length > 0){
+    var oldPl = (lbGroup==='all') ? aggPlayers(oldLogs) : aggPlayers(oldLogs).filter(function(p){ return p.group===lbGroup; });
+    oldPl.sort(function(a,b){
+      if(lbMode==='pts') return b.pts-a.pts;
+      if(lbMode==='makes') return b.makes-a.makes;
+      return b.sessions-a.sessions;
+    });
+    oldPl.forEach(function(p,i){ oldRanks[p.name.toLowerCase()] = i; });
+  }
 
-  function buildRow(p,i){
+  function moveIndicator(p, currentIdx){
+    var key = p.name.toLowerCase();
+    if(!(key in oldRanks)) return '<span class="lb-move lb-move-new">NEW</span>';
+    var oldIdx = oldRanks[key];
+    var diff = oldIdx - currentIdx; // positive = moved up
+    if(diff > 0) return '<span class="lb-move lb-move-up">▲'+diff+'</span>';
+    if(diff < 0) return '<span class="lb-move lb-move-down">▼'+Math.abs(diff)+'</span>';
+    return '';
+  }
+
+  function buildRow(p, i){
     var isMe = me && p.name.toLowerCase()===me;
     var rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
     var rl = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
@@ -2041,7 +2111,7 @@ function renderLb(){
     return '<div class="lbrow '+(isMe?'lbrow-me ':'')+rc+'" data-pname="'+escapeAttr(p.name)+'">'
       +'<div class="lbr">'+rl+'</div>'
       +'<div style="flex:1;padding:0 10px">'
-        +'<div class="lbn">'+escapeHtml(p.name)+(isMe?' <span class="grp-you">YOU</span>':'')+'</div>'
+        +'<div class="lbn">'+escapeHtml(p.name)+(isMe?' <span class="lb-you-tag">YOU</span>':'')+moveIndicator(p,i)+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px">'
           +'<span class="tb '+tier.k+'" style="font-size:9px;padding:2px 8px;margin:0">'+tier.l+'</span>'
           +(lbGroup==='all' && p.group ? grpBadge(p.group) : '')
@@ -2051,18 +2121,53 @@ function renderLb(){
       +'</div>';
   }
 
+  // ── Neighborhood View: Top 5 + ellipsis + (above, YOU, below) ──
+  var TOP_N = 5;
+  var visibleIdxs = {};
+  for(var vi=0; vi<Math.min(TOP_N, pl.length); vi++) visibleIdxs[vi] = true;
+
+  if(meIdx >= 0){
+    // Always show: 1 above me, me, 1 below me
+    if(meIdx > 0) visibleIdxs[meIdx-1] = true;
+    visibleIdxs[meIdx] = true;
+    if(meIdx < pl.length-1) visibleIdxs[meIdx+1] = true;
+  }
+
   var html = '';
   var idxList = Object.keys(visibleIdxs).map(Number).sort(function(a,b){return a-b;});
   var prevIdx = -1;
   idxList.forEach(function(idx){
-    if(prevIdx>=0 && idx>prevIdx+1){
-      html += '<div style="text-align:center;color:var(--text-muted);font-size:11px;padding:6px 0;letter-spacing:3px;">· · ·</div>';
+    if(prevIdx >= 0 && idx > prevIdx+1){
+      html += '<div class="lb-ellipsis">· · ·</div>';
     }
     html += buildRow(pl[idx], idx);
     prevIdx = idx;
   });
-  if(pl.length > MAX_VISIBLE && !visibleIdxs[pl.length-1]){
-    html += '<div style="text-align:center;color:var(--text-muted);font-size:11px;padding:8px 0;">'+pl.length+' players total</div>';
+  if(pl.length > TOP_N){
+    html += '<div class="lb-total-count">'+pl.length+' players total</div>';
+  }
+
+  // ── Weekly Jumpers (Most Improved) ──
+  if(oldLogs.length > 0 && pl.length > 2){
+    var jumpers = pl.map(function(p,i){
+      var key = p.name.toLowerCase();
+      if(!(key in oldRanks)) return null; // new players excluded
+      var diff = oldRanks[key] - i;
+      return diff > 0 ? { name:p.name, from:oldRanks[key]+1, to:i+1, delta:diff } : null;
+    }).filter(Boolean).sort(function(a,b){ return b.delta - a.delta; }).slice(0,3);
+
+    if(jumpers.length > 0){
+      html += '<div class="lb-jumpers">'
+        +'<div class="lb-jumpers-title">🚀 Weekly Jumpers</div>';
+      jumpers.forEach(function(j,i){
+        html += '<div class="lb-jumper-row">'
+          +'<div class="lb-jumper-rank">'+(i+1)+'</div>'
+          +'<div class="lb-jumper-name">'+escapeHtml(j.name)+'</div>'
+          +'<div class="lb-jumper-delta">▲'+j.delta+'</div>'
+          +'</div>';
+      });
+      html += '</div>';
+    }
   }
 
   body.innerHTML = html;
@@ -2091,19 +2196,18 @@ function goStats(name){
 
 var _aggCache = null, _aggCacheLen = -1;
 function aggPlayers(ls){
-  // Return cached result if logs haven't changed
-  if(_aggCache && _aggCacheLen === ls.length) return _aggCache;
+  // Only use cache for the main logs array
+  if(ls === logs && _aggCache && _aggCacheLen === ls.length) return _aggCache;
   var m = {};
   ls.forEach(function(l){
     var k=l.name.toLowerCase();
     if(!m[k]) m[k]={name:l.name,pts:0,makes:0,sessions:0,group:l.group||''};
     m[k].pts+=l.pts; m[k].makes+=l.makes; m[k].sessions++;
-    // keep most recent group assignment if present
     if(l.group) m[k].group=l.group;
   });
-  _aggCache = Object.values(m);
-  _aggCacheLen = ls.length;
-  return _aggCache;
+  var result = Object.values(m);
+  if(ls === logs){ _aggCache = result; _aggCacheLen = ls.length; }
+  return result;
 }
 function invalidateAggCache(){ _aggCache = null; _aggCacheLen = -1; }
 
@@ -2175,7 +2279,11 @@ function renderCoach(){
     +'<button class="btn btn-red" id="reset-data-btn">⚠️ Reset All Data (New Season)</button>'
     +'</div>';
 
-  body.innerHTML = announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Actions</span></div>'+actHtml;
+  body.innerHTML = announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Directory</span></div><div class="card" id="coach-directory"></div><div class="sec-div"><span>Actions</span></div>'+actHtml;
+
+  // Load player directory async
+  var dirEl = document.getElementById('coach-directory');
+  if(dirEl) renderDirectory(dirEl);
 
   // Wire coach page events
   var oab = document.getElementById('open-announce-btn');
@@ -2460,20 +2568,29 @@ function showSplash(name, ptsEarned){
   document.getElementById('sp-rval').textContent = np?tp+' / '+np:tp+' pts';
   var rb = document.getElementById('sp-reward');
   if(je) {
-    rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
-    // If the reward is a T-shirt or Hoodie, prompt for shirt size
-    var isShirt = je.n.toLowerCase().indexOf('shirt') >= 0 || je.n.toLowerCase().indexOf('tee') >= 0;
-    var isHoodie = je.n.toLowerCase().indexOf('hoodie') >= 0;
-    if(isShirt || isHoodie) {
-      var modalTitle = isHoodie ? '🏅 You Earned a Hoodie!' : '🥇 You Earned a T-Shirt!';
-      var modalSub = 'Enter your shirt size so coach can order it for you. This will be emailed to Coach automatically.';
-      document.getElementById('shirt-size-modal-title').textContent = modalTitle;
-      document.getElementById('shirt-size-modal-sub').textContent = modalSub;
-      document.getElementById('shirt-size-sel').value = '';
-      // Store award info for email
-      window._pendingAward = { name: name, reward: je.n, emoji: je.i };
-      // Delay so splash renders first
-      setTimeout(function(){ openModal('shirt-size-modal'); }, 600);
+    // Check for date cutoff on rewards with "by May 31"
+    var today31 = new Date();
+    var isMay31Past = today31 > new Date('2026-05-31T23:59:59');
+    var hasCutoff = je.d && je.d.toLowerCase().indexOf('by may 31') >= 0;
+
+    if(hasCutoff && isMay31Past){
+      // Earned after cutoff — congratulate but note deadline passed
+      rb.innerHTML='<div class="speb"><div class="ri">💪</div><div class="rn">100 Points — Great Work!</div>'
+        +'<div class="rp" style="margin-top:6px;">The T-shirt deadline was May 31, but you\'re building serious momentum. Keep grinding for the next reward!</div></div>';
+    } else {
+      rb.innerHTML='<div class="speb"><div class="ri">'+je.i+'</div><div class="rn">🎉 You earned: '+je.n+'!</div><div class="rp">'+(je.d||'See Coach to claim')+'</div></div>';
+      // If the reward is a T-shirt or Hoodie, prompt for shirt size
+      var isShirt = je.n.toLowerCase().indexOf('shirt') >= 0 || je.n.toLowerCase().indexOf('tee') >= 0;
+      var isHoodie = je.n.toLowerCase().indexOf('hoodie') >= 0;
+      if(isShirt || isHoodie) {
+        var modalTitle = isHoodie ? '🏅 You Earned a Hoodie!' : '🥇 You Earned a T-Shirt!';
+        var modalSub = 'Enter your shirt size so coach can order it for you. This will be emailed to Coach automatically.';
+        document.getElementById('shirt-size-modal-title').textContent = modalTitle;
+        document.getElementById('shirt-size-modal-sub').textContent = modalSub;
+        document.getElementById('shirt-size-sel').value = '';
+        window._pendingAward = { name: name, reward: je.n, emoji: je.i };
+        setTimeout(function(){ openModal('shirt-size-modal'); }, 600);
+      }
     }
   }
   else if(np) rb.innerHTML='<div class="spnr"><div class="ri">'+nxt.i+'</div><div class="rn">'+nxt.n+'</div><div class="rp">'+(np-tp)+' pts to unlock'+(nxt.d?' · '+nxt.d:'')+'</div></div>';
@@ -2548,6 +2665,10 @@ function doSignIn(){
   err.textContent='';
   var p = {first:fn,last:ln,email:em,name:fn+' '+ln,group:grp,isCoach:false};
   pSave(p); document.getElementById('si').style.display='none'; applyPlayer(p);
+  // Save profile to Supabase so coach can see email in directory
+  SB.from('logs').delete().eq('name','__PROFILE__').eq('acts',fn+' '+ln).then(function(){
+    SB.from('logs').insert([{name:'__PROFILE__',date:new Date().toISOString().slice(0,10),acts:fn+' '+ln,pts:0,makes:0,group:grp+'|'+em,ts:Date.now()}]);
+  });
 }
 
 function doParentIn(){
@@ -3223,6 +3344,54 @@ async function fetchTrackingData(){
     else from += batchSize;
   }
   return all;
+}
+
+// ════════════════════════════════════════
+// PLAYER DIRECTORY (Coach Only)
+// ════════════════════════════════════════
+async function fetchProfiles(){
+  var all=[], from=0, batchSize=1000, done=false;
+  while(!done){
+    var r=await SB.from('logs').select('acts,group,ts')
+      .eq('name','__PROFILE__')
+      .order('ts',{ascending:false})
+      .range(from, from+batchSize-1);
+    if(r.error) break;
+    var batch=r.data||[];
+    all=all.concat(batch);
+    if(batch.length<batchSize) done=true;
+    else from+=batchSize;
+  }
+  // Deduplicate by player name (keep most recent)
+  var seen={}, profiles=[];
+  all.forEach(function(row){
+    var name=row.acts;
+    if(seen[name.toLowerCase()]) return;
+    seen[name.toLowerCase()]=true;
+    var parts=(row.group||'').split('|');
+    profiles.push({name:name, group:parts[0]||'', email:parts[1]||''});
+  });
+  return profiles.sort(function(a,b){ return a.name.localeCompare(b.name); });
+}
+
+function renderDirectory(container){
+  container.innerHTML='<div class="ct">📋 Player Directory</div><div style="text-align:center;color:var(--text-muted);padding:12px;font-size:12px;">Loading...</div>';
+  fetchProfiles().then(function(profiles){
+    if(!profiles.length){
+      container.innerHTML='<div class="ct">📋 Player Directory</div><div style="text-align:center;color:var(--text-muted);padding:16px;font-size:13px;">No player profiles yet. Players appear here after signing up.</div>';
+      return;
+    }
+    var rows=profiles.map(function(p){
+      var gc=p.group==='hs'?'grp-hs':p.group==='jh'?'grp-jh':p.group==='yth'?'grp-yth':'';
+      var gl=p.group==='hs'?'HS':p.group==='jh'?'JH':p.group==='yth'?'YTH':'—';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,203,5,0.06);">'
+        +'<div style="flex:1;"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;">'+escapeHtml(p.name)+'</div>'
+        +'<div style="font-size:12px;color:var(--text-dim);margin-top:2px;">'+escapeHtml(p.email)+'</div></div>'
+        +'<span class="grp-badge '+gc+'">'+gl+'</span>'
+        +'</div>';
+    }).join('');
+    container.innerHTML='<div class="ct">📋 Player Directory — '+profiles.length+' Players</div>'+rows;
+  });
 }
 
 function fmtN(n){ return n.toLocaleString(); }
