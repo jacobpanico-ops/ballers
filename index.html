@@ -312,6 +312,19 @@ select.inp { cursor: pointer; }
 .t3 { background: rgba(200,150,12,0.25); color: var(--gold-bright); border: 1px solid var(--gold); }
 .t4 { background: linear-gradient(90deg, rgba(200,150,12,0.3), rgba(240,180,41,0.3)); color: var(--gold-glow); border: 1px solid var(--gold-bright); box-shadow: 0 0 14px rgba(255,180,0,0.25); }
 
+/* ═══ PLAYER TITLES ═══ */
+.player-title {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-display); font-size: 10px; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; font-style: italic;
+  padding: 3px 10px; border-radius: 6px;
+}
+.player-title.title-10 { background: rgba(90,82,72,0.3); color: var(--text-dim); border: 1px solid rgba(90,82,72,0.4); }
+.player-title.title-30 { background: rgba(200,150,12,0.12); color: var(--gold); border: 1px solid var(--gold-border); }
+.player-title.title-60 { background: rgba(200,150,12,0.2); color: var(--gold-bright); border: 1px solid var(--gold); box-shadow: 0 0 8px rgba(255,180,0,0.1); }
+.player-title.title-80 { background: linear-gradient(135deg, rgba(200,150,12,0.3), rgba(240,180,41,0.2)); color: var(--gold-glow); border: 1px solid var(--gold-bright); box-shadow: 0 0 14px rgba(255,180,0,0.2); animation: title-glow 2s ease-in-out infinite alternate; }
+@keyframes title-glow { 0% { box-shadow: 0 0 8px rgba(255,180,0,0.15); } 100% { box-shadow: 0 0 18px rgba(255,180,0,0.3); } }
+
 .pt { height: 8px; background: var(--surface3); border-radius: 4px; overflow: hidden; margin: 6px 0 4px; }
 .pf { height: 100%; background: linear-gradient(90deg, var(--ember1), var(--gold-bright), var(--gold-glow)); border-radius: 4px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 8px rgba(255,160,0,0.4); }
 
@@ -866,7 +879,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v4.3</div>
+        <div class="logo-badge">Fairview Apaches · v4.7</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -1179,7 +1192,7 @@ select.inp { cursor: pointer; }
 <script>
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  HOOP N' HUSTLE — Fairview Apaches                                 ║
-// ║  v4.3 · Single-file PWA · Supabase backend                        ║
+// ║  v4.7 · Single-file PWA · Supabase backend                        ║
 // ║                                                                     ║
 // ║  TABLE OF CONTENTS                                                  ║
 // ║  ─────────────────                                                  ║
@@ -1246,6 +1259,17 @@ var TIERS = [
   {p:500, k:'t3', l:'Gold'},
   {p:750, k:'t4', l:'Elite'},
 ];
+var TITLES = [
+  {days:10, title:'Gym Rat',        icon:'🐀'},
+  {days:30, title:'Iron Man',       icon:'🦾'},
+  {days:60, title:'Court General',  icon:'⭐'},
+  {days:80, title:'Apache Legend',  icon:'🏆'},
+];
+function getTitle(sessions){
+  var t = null;
+  TITLES.forEach(function(ti){ if(sessions >= ti.days) t = ti; });
+  return t;
+}
 var REWARDS_BY_GROUP = {
   yth: [
     {p:100,   i:'🥇', n:'FV Basketball T-Shirt',           d:'by May 31'},
@@ -1260,7 +1284,7 @@ var REWARDS_BY_GROUP = {
     {p:250,   i:'🥤', n:'Gatorade Water Bottle',           d:'awarded Oct 31'},
     {p:500,   i:'🍗', n:"Buffalo Wild Wings Gift Card ($20)", d:'awarded Oct 31'},
     {p:750,   i:'🏅', n:"Hoop N'Hustle Hoodie",            d:'awarded Oct 31'},
-    {p:99999, i:'💟', n:'Custom Team Shoes',               d:'awarded Oct 31'},
+    {p:99999, i:'👟', n:'Custom Team Shoes',               d:'awarded Oct 31'},
   ],
 };
 // Fallback: if group unknown, use hs schedule
@@ -1674,6 +1698,7 @@ window.addEventListener('load', function(){
     if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); renderLb(); hideLb(); }
 
     fetchLogs().then(function(){
+      buildRoster(); // rebuild dropdown with logged players
       renderLb();
       if(coachOn) renderCoach();
       hideLb();
@@ -1736,7 +1761,7 @@ window.addEventListener('load', function(){
     document.getElementById('offline-banner').classList.remove('on');
     toast('✅ Back online — syncing...');
     syncOfflineQueue().then(function(){
-      fetchLogs().then(function(){ renderLb(); if(coachOn) renderCoach(); });
+      fetchLogs().then(function(){ buildRoster(); renderLb(); if(coachOn) renderCoach(); });
       loadAnnounceFromDB();
       loadBonusFromDB();
     });
@@ -1838,15 +1863,25 @@ function wireEvents(){
 // §7  ROSTER & PLAYER SELECT
 // ████████████████████████████████████████████████████████████████████████
 function buildRoster(){
+  // Merge ROSTER names + all players who have actually logged
+  var loggedNames = {};
+  aggPlayers(logs).forEach(function(p){ loggedNames[p.name.toLowerCase()] = p.name; });
+  ROSTER.forEach(function(n){ loggedNames[n.toLowerCase()] = n; });
+  var allNames = Object.values(loggedNames).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
+
   ['player-select','stats-sel'].forEach(function(id){
     var el = document.getElementById(id);
+    var prev = el.value; // preserve current selection
     el.innerHTML = '<option value="">'+(id==='player-select'?'— Select your name —':'— Select a player —')+'</option>';
-    ROSTER.forEach(function(n){
+    allNames.forEach(function(n){
       var o = document.createElement('option');
       o.value = n; o.textContent = n; el.appendChild(o);
     });
-    var ot = document.createElement('option');
-    ot.value = '__other__'; ot.textContent = 'Other (type below)'; el.appendChild(ot);
+    if(id==='player-select'){
+      var ot = document.createElement('option');
+      ot.value = '__other__'; ot.textContent = 'Other (type below)'; el.appendChild(ot);
+    }
+    if(prev) el.value = prev; // restore selection
   });
 }
 
@@ -2070,6 +2105,11 @@ function renderStats(){
   var tp=pl.reduce(function(s,l){return s+l.pts;},0);
   var tm=pl.reduce(function(s,l){return s+l.makes;},0);
   var ss=pl.length, dn=pl[pl.length-1].name;
+  // Count unique days logged for title system
+  var uniqueDays = {};
+  pl.forEach(function(l){ if(l.date) uniqueDays[l.date]=true; });
+  var totalDays = Object.keys(uniqueDays).length;
+  var playerTitle = getTitle(totalDays);
   // Resolve group: prefer saved profile group, fall back to most recent log group
   var savedP = pLoad();
   var playerGroup = (savedP && savedP.name && savedP.name.toLowerCase()===name && savedP.group) ? savedP.group : (pl[pl.length-1].group||'');
@@ -2131,6 +2171,7 @@ function renderStats(){
     +'<div class="sb">'+tp+'</div>'
     +'<div class="sl">Total Points</div>'
     +'<span class="tb '+tier.k+'">'+tier.l+'</span>'
+    +(playerTitle?'<div style="margin-top:6px;"><span class="player-title title-'+playerTitle.days+'">'+playerTitle.icon+' '+playerTitle.title+'</span></div>':'')
     +(playerGroup?'<div style="margin-bottom:10px">'+grpBadge(playerGroup)+'</div>':'')
     +'<div style="padding:0 4px">'
     +'<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;">'
@@ -2144,9 +2185,22 @@ function renderStats(){
     +'<div class="sg">'
     +'<div class="sx"><div class="sxn">'+tp+'</div><div class="sxl">Total Points</div></div>'
     +'<div class="sx"><div class="sxn">'+tm+'</div><div class="sxl">Total Makes</div></div>'
-    +'<div class="sx"><div class="sxn">'+ss+'</div><div class="sxl">Sessions</div></div>'
-    +'<div class="sx"><div class="sxn">'+(ss>0?(tp/ss).toFixed(1):0)+'</div><div class="sxl">Avg Pts/Day</div></div>'
+    +'<div class="sx"><div class="sxn">'+totalDays+'</div><div class="sxl">Days Active</div></div>'
+    +'<div class="sx"><div class="sxn">'+(totalDays>0?(tp/totalDays).toFixed(1):0)+'</div><div class="sxl">Avg Pts/Day</div></div>'
     +'</div>'
+    +(function(){
+      var nextTitle = TITLES.find(function(ti){ return ti.days > totalDays; });
+      if(!nextTitle) return '<div class="card" style="text-align:center;padding:14px;"><div style="font-size:18px;margin-bottom:4px;">🏆</div><div style="font-family:var(--font-display);font-size:12px;font-weight:800;font-style:italic;letter-spacing:2px;text-transform:uppercase;color:var(--gold-bright);">All titles unlocked!</div></div>';
+      var pctTitle = Math.min(100, Math.round(totalDays / nextTitle.days * 100));
+      return '<div class="card" style="padding:14px;">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+        +'<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Next Title</div>'
+        +'<div style="font-family:var(--font-display);font-size:11px;font-weight:800;font-style:italic;color:var(--gold);">'+totalDays+' / '+nextTitle.days+' days</div>'
+        +'</div>'
+        +'<div class="pt"><div class="pf" style="width:'+pctTitle+'%"></div></div>'
+        +'<div style="text-align:center;margin-top:8px;"><span class="player-title title-'+nextTitle.days+'" style="opacity:0.6;">'+nextTitle.icon+' '+nextTitle.title+'</span></div>'
+        +'</div>';
+    })()
     +(function(){try{return renderBadgesHtml(name, pl, logs);}catch(e){console.error('Badge render error:',e);return '';}})()
     +'<div class="card"><div class="ct">Recent Activity</div>'
     +rec.map(function(l){return'<div class="lr"><div class="ld">'+fmtDate(l.date)+'</div><div class="la">'+escapeHtml(l.acts)+'</div><div class="lp">+'+l.pts+'</div></div>';}).join('')
@@ -2193,7 +2247,7 @@ function renderLb(){
     hsBanner = document.createElement('div');
     hsBanner.id = 'lb-hs-banner';
     hsBanner.style.cssText = 'margin:0 0 12px 0;padding:12px 16px;background:linear-gradient(135deg,rgba(200,150,12,0.18),rgba(240,180,41,0.06));border:1px solid var(--gold-border-strong);border-radius:12px;text-align:center;';
-    hsBanner.innerHTML = '<div style="font-size:22px;margin-bottom:4px">💟</div>'
+    hsBanner.innerHTML = '<div style="font-size:22px;margin-bottom:4px">👟</div>'
       +'<div style="font-family:var(--font-display);font-size:13px;font-weight:900;font-style:italic;letter-spacing:1px;color:var(--gold-bright);text-transform:uppercase;margin-bottom:3px">Custom Team Shoes</div>'
       +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">Ultimate Prize — awarded Oct 31 to the<br><strong style="color:var(--text)">highest point earner in High School</strong></div>';
     body.parentNode.insertBefore(hsBanner, body);
@@ -2233,6 +2287,54 @@ function renderLb(){
     return '';
   }
 
+  // ── Calculate current streaks for 🔥 indicator ──
+  var streakMap = {};
+  pl.forEach(function(p){
+    var dates = {};
+    logs.forEach(function(l){ if(l.name.toLowerCase()===p.name.toLowerCase() && l.date) dates[l.date]=true; });
+    var sorted = Object.keys(dates).sort().reverse(); // newest first
+    var streak = 0;
+    if(sorted.length){
+      var d = new Date(sorted[0]+'T12:00:00');
+      var today = new Date(); today.setHours(12,0,0,0);
+      var diffDays = Math.round((today-d)/(86400000));
+      if(diffDays > 1){ streak = 0; } // last log was more than 1 day ago
+      else {
+        streak = 1;
+        for(var si=1; si<sorted.length; si++){
+          var prev = new Date(sorted[si-1]+'T12:00:00');
+          var cur = new Date(sorted[si]+'T12:00:00');
+          if(Math.round((prev-cur)/86400000) === 1) streak++;
+          else break;
+        }
+      }
+    }
+    streakMap[p.name.toLowerCase()] = streak;
+  });
+
+  function streakBadge(p){
+    var s = streakMap[p.name.toLowerCase()] || 0;
+    if(s < 3) return '';
+    return ' <span style="font-size:13px;vertical-align:middle;" title="'+s+'-day streak">🔥'+
+      (s >= 5 ? '<span style="font-family:var(--font-display);font-size:10px;font-weight:900;color:#FF6A00;vertical-align:middle;">'+s+'</span>' : '')+
+      '</span>';
+  }
+
+  // ── Calculate unique days logged per player for titles ──
+  var daysMap = {};
+  logs.forEach(function(l){
+    var k = l.name.toLowerCase();
+    if(!daysMap[k]) daysMap[k] = {};
+    if(l.date) daysMap[k][l.date] = true;
+  });
+
+  function titleBadgeHtml(p){
+    var days = Object.keys(daysMap[p.name.toLowerCase()]||{}).length;
+    var t = getTitle(days);
+    if(!t) return '';
+    return '<span class="player-title title-'+t.days+'">'+t.icon+' '+escapeHtml(t.title)+'</span>';
+  }
+
   function buildRow(p, i){
     var isMe = me && p.name.toLowerCase()===me;
     var rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
@@ -2243,9 +2345,10 @@ function renderLb(){
     return '<div class="lbrow '+(isMe?'lbrow-me ':'')+rc+'" data-pname="'+escapeAttr(p.name)+'">'
       +'<div class="lbr">'+rl+'</div>'
       +'<div style="flex:1;padding:0 10px">'
-        +'<div class="lbn">'+escapeHtml(p.name)+(isMe?' <span class="lb-you-tag">YOU</span>':'')+moveIndicator(p,i)+'</div>'
-        +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px">'
+        +'<div class="lbn">'+escapeHtml(p.name)+(isMe?' <span class="lb-you-tag">YOU</span>':'')+streakBadge(p)+moveIndicator(p,i)+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">'
           +'<span class="tb '+tier.k+'" style="font-size:9px;padding:2px 8px;margin:0">'+tier.l+'</span>'
+          +titleBadgeHtml(p)
           +(lbGroup==='all' && p.group ? grpBadge(p.group) : '')
         +'</div>'
       +'</div>'
@@ -2730,7 +2833,7 @@ function showSplash(name, ptsEarned){
     }
   }
   else if(np) rb.innerHTML='<div class="spnr"><div class="ri">'+nxt.i+'</div><div class="rn">'+nxt.n+'</div><div class="rp">'+(np-tp)+' pts to unlock'+(nxt.d?' · '+nxt.d:'')+'</div></div>';
-  else if(splashGrp==='hs') rb.innerHTML='<div class="spnr"><div class="ri">💟</div><div class="rn">Custom Shoes Contender</div><div class="rp">Top HS earner wins! · awarded Oct 31</div></div>';
+  else if(splashGrp==='hs') rb.innerHTML='<div class="spnr"><div class="ri">👟</div><div class="rn">Custom Shoes Contender</div><div class="rp">Top HS earner wins! · awarded Oct 31</div></div>';
   else rb.innerHTML='<div class="spnr"><div class="ri">🏅</div><div class="rn">All rewards unlocked!</div><div class="rp">Keep grinding — stay on top of the board.</div></div>';
   // Show newly earned badges
   var spBdg = document.getElementById('sp-badges');
