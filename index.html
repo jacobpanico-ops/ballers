@@ -221,20 +221,47 @@ select.inp { cursor: pointer; }
 .ab.bonus-active .ap { color: var(--gold-bright); }
 
 /* ═══ COUNTER ROW ═══ */
-.cr { display: flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; }
-.cl { flex: 1; font-size: 14px; font-weight: 600; line-height: 1.3; }
-.cs { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
+.cr { display: flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+.cl { flex: 1; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--text); }
+.cs { font-size: 11px; color: var(--text-dim); display: block; margin-top: 2px; }
 .cc { display: flex; align-items: center; gap: 10px; }
-.cb { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--gold-border); background: var(--surface3); color: var(--text); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; transition: all 0.15s; font-weight: 300; }
-.cb:active { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); transform: scale(0.93); }
-.cv { font-family: var(--font-display); font-size: 30px; font-weight: 900; color: var(--gold-bright); min-width: 44px; text-align: center; }
+.cb {
+  width: 60px; height: 60px; border-radius: 12px;
+  border: 2px solid var(--gold-border-strong); background: var(--surface3);
+  color: #F5F0E8; font-size: 28px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  user-select: none; transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+}
+.cb:active { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); transform: scale(1.1); }
+.cv { font-family: var(--font-display); font-size: 36px; font-weight: 900; color: var(--gold-glow); min-width: 52px; text-align: center; text-shadow: 0 0 12px rgba(255,200,0,0.2); }
 
-/* ═══ POINTS PREVIEW ═══ */
-.pp { background: linear-gradient(135deg, rgba(200,150,12,0.16), rgba(200,150,12,0.04)); border: 1px solid var(--gold-border-strong); border-radius: var(--radius); padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; position: relative; overflow: hidden; }
+/* ═══ MAKES COUNTER (gym-optimized) ═══ */
+.makes-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 8px 0; }
+.makes-btn {
+  width: 60px; height: 60px; border-radius: 12px;
+  border: 2px solid var(--gold-border-strong); background: var(--surface3);
+  color: #F5F0E8; font-family: var(--font-display); font-size: 16px; font-weight: 900;
+  font-style: italic; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  user-select: none; transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+}
+.makes-btn:active { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); transform: scale(1.1); }
+.makes-btn.minus { border-color: rgba(90,82,72,0.5); color: var(--text-muted); }
+.makes-btn.minus:active { background: rgba(90,82,72,0.4); color: var(--text); transform: scale(1.1); }
+.makes-disp {
+  font-family: var(--font-display); font-size: 48px; font-weight: 900; font-style: italic;
+  color: var(--gold-glow); min-width: 80px; text-align: center; line-height: 1;
+  text-shadow: 0 0 20px rgba(255,200,0,0.3);
+  padding: 0 4px;
+}
+.makes-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.makes-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+
+/* ═══ POINTS PREVIEW (high contrast for gym lighting) ═══ */
+.pp { background: linear-gradient(135deg, rgba(200,150,12,0.2), rgba(200,150,12,0.06)); border: 2px solid var(--gold-bright); border-radius: var(--radius); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; position: relative; overflow: hidden; }
 .pp::after { content: '🏀'; position: absolute; right: 68px; top: 50%; transform: translateY(-50%); font-size: 56px; opacity: 0.05; }
-.ppl { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
-.ppn { font-family: var(--font-display); font-size: 58px; font-weight: 900; color: var(--gold-glow); line-height: 1; font-style: italic; text-shadow: 0 0 30px rgba(255,200,0,0.35); }
-.ppc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.ppl { font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--text); margin-bottom: 2px; }
+.ppn { font-family: var(--font-display); font-size: 64px; font-weight: 900; color: var(--gold-glow); line-height: 1; font-style: italic; text-shadow: 0 0 40px rgba(255,200,0,0.45), 0 2px 4px rgba(0,0,0,0.5); }
+.ppc { font-size: 12px; color: var(--text-dim); margin-top: 2px; font-weight: 600; }
 
 /* ═══ BUTTONS ═══ */
 .btn {
@@ -839,7 +866,7 @@ select.inp { cursor: pointer; }
       <img class="mascot-icon" src="image_9e76e3e3.png" alt="Hoop N Hustle" style="width:46px;height:46px;border-radius:4px;">
       <div>
         <div class="logo">Hoop N' <em>Hustle</em></div>
-        <div class="logo-badge">Fairview Apaches · v4.1</div>
+        <div class="logo-badge">Fairview Apaches · v4.3</div>
       </div>
     </div>
     <div id="hdr-right"></div>
@@ -884,13 +911,15 @@ select.inp { cursor: pointer; }
   </div>
   <div class="card">
     <div class="ct">Made Shots</div>
-    <div class="cr" style="margin-bottom:0">
-      <div class="cl">Total Makes Today<span class="cs">1 pt per 50 makes</span></div>
-      <div class="cc">
-        <button class="cb" id="makes-minus">−</button>
-        <div class="cv" id="makes-disp">0</div>
-        <button class="cb" id="makes-plus">+</button>
-      </div>
+    <div class="makes-label">Total Makes Today</div>
+    <div class="makes-sub">1 pt per 50 makes</div>
+    <div class="makes-row">
+      <button class="makes-btn minus" id="makes-m25">−25</button>
+      <button class="makes-btn minus" id="makes-m10">−10</button>
+      <div class="makes-disp" id="makes-disp">0</div>
+      <button class="makes-btn" id="makes-p10">+10</button>
+      <button class="makes-btn" id="makes-p25">+25</button>
+      <button class="makes-btn" id="makes-p50">+50</button>
     </div>
   </div>
   <div class="pp">
@@ -1148,9 +1177,48 @@ select.inp { cursor: pointer; }
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  HOOP N' HUSTLE — Fairview Apaches                                 ║
+// ║  v4.3 · Single-file PWA · Supabase backend                        ║
+// ║                                                                     ║
+// ║  TABLE OF CONTENTS                                                  ║
+// ║  ─────────────────                                                  ║
+// ║  §1  CONFIG & CONSTANTS — Supabase client, activities, tiers,      ║
+// ║      rewards, quotes, groups, state variables                       ║
+// ║  §2  BADGES — 35 badge definitions, evaluation, rendering          ║
+// ║  §3  DEBUG — Debug flag, logging helpers, state inspector          ║
+// ║  §4  STORAGE & OFFLINE — localStorage cache, offline queue,        ║
+// ║      safeSave, announce/bonus fallbacks                            ║
+// ║  §5  UTILITIES — escapeHtml, escapeAttr, date helpers, fmtN       ║
+// ║  §6  INIT & EVENTS — App bootstrap, wireEvents, online/offline,   ║
+// ║      realtime subscription                                         ║
+// ║  §7  ROSTER & PLAYER SELECT — Dropdown builders, player picker    ║
+// ║  §8  DATE SETUP — Date picker config, window enforcement          ║
+// ║  §9  DATA FETCH — fetchLogs, aggPlayers, cache invalidation       ║
+// ║  §10 ACTIVITIES & LOGGING — Activity grid, counters, calcPts,     ║
+// ║      submitLog with offline queue + race condition guard           ║
+// ║  §11 STATS PAGE — Player stats rendering with badges              ║
+// ║  §12 LEADERBOARD — Neighborhood view, movement indicators,        ║
+// ║      weekly jumpers, group filters                                 ║
+// ║  §13 COACH VIEW — Coach page rendering, today's feed,             ║
+// ║      player directory                                              ║
+// ║  §14 EDIT & DELETE LOGS — Modal editors, inline edit, log removal ║
+// ║  §15 BONUS EVENTS — Create, clear, load from Supabase            ║
+// ║  §16 ANNOUNCEMENTS — Create, clear, load from Supabase           ║
+// ║  §17 COACH AUTH — PIN verify, coach mode, lock, override, reset  ║
+// ║  §18 EXPORT — CSV download                                        ║
+// ║  §19 SPLASH & REWARDS — Post-log celebration, reward detection,   ║
+// ║      confetti, May 31 cutoff, shirt size modal                    ║
+// ║  §20 SIGN IN / SIGN OUT — Player, parent, coach login flows      ║
+// ║  §21 AWARD BONUS POINTS — Manual point awards                     ║
+// ║  §22 NAVIGATION & UI — goPage, goStats, modals, toast            ║
+// ║  §23 ANALYTICS — DAU, retention, weekly volume, page tracking,    ║
+// ║      cohort analysis, player directory fetch                       ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+// ████████████████████████████████████████████████████████████████████████
+// §1  CONFIG & CONSTANTS
+// ████████████████████████████████████████████████████████████████████████
 var SB = supabase.createClient(
   'https://mljtsktkvztrqprfncwp.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sanRza3Rrdnp0cnFwcmZuY3dwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjI3NDMsImV4cCI6MjA4OTU5ODc0M30.Zv_NFjEkF30I_9dV__uIRAeJj5NpEAFUGF9J4mYOxhw'
@@ -1213,9 +1281,9 @@ var QUOTES = [
   { text: 'Failing to prepare is preparing to fail.', attr: 'John Wooden' },
 ];
 
-// ════════════════════════════════════════
-// BADGES
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §2  BADGES — Definitions, evaluation, rendering
+// ████████████████████████████████████████████████████████████████████████
 var BADGES = [
   // Getting Started
   {id:'first_sweat',  cat:'Getting Started', icon:'💧', name:'First Sweat',   desc:'Log your first workout',               check:function(s){ return s.sessions >= 1; }},
@@ -1422,9 +1490,53 @@ var GROUPS = {
 function grpBadge(g){ var d=GROUPS[g]; if(!d) return ''; return '<span class="grp-badge '+d.cls+'">'+d.label+'</span>'; }
 function grpLabel(g){ return GROUPS[g] ? GROUPS[g].label : 'Unknown'; }
 
-// ════════════════════════════════════════
-// CACHE & PERSIST
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §3  DEBUG — Set HNH_DEBUG=true in console to enable verbose logging
+// ████████████████████████████████████████████████████████████████████████
+var HNH_DEBUG = false;
+var dbg = {
+  log: function(section, msg, data){
+    if(!HNH_DEBUG) return;
+    var prefix = '%c[HNH:'+section+']';
+    if(data !== undefined) console.log(prefix, 'color:#FFCB05;font-weight:bold', msg, data);
+    else console.log(prefix, 'color:#FFCB05;font-weight:bold', msg);
+  },
+  warn: function(section, msg, data){
+    if(!HNH_DEBUG) return;
+    console.warn('[HNH:'+section+'] '+msg, data||'');
+  },
+  error: function(section, msg, data){
+    // Always log errors regardless of debug flag
+    console.error('[HNH:'+section+'] '+msg, data||'');
+  },
+  // Dump current app state to console — call dbg.state() anytime
+  state: function(){
+    console.group('%c[HNH] App State Dump', 'color:#FFCB05;font-weight:bold;font-size:14px');
+    console.log('logs:', logs.length, 'entries');
+    console.log('coachOn:', coachOn, '| coachModeOn:', coachModeOn);
+    console.log('bonusEvent:', bonusEvent);
+    console.log('announcement:', announcement ? announcement.slice(0,50)+'...' : '(none)');
+    console.log('lbMode:', lbMode, '| lbGroup:', lbGroup);
+    console.log('ROSTER:', ROSTER);
+    console.log('navigator.onLine:', navigator.onLine);
+    console.log('offlineQueue:', getOfflineQueue().length, 'items');
+    var p = pLoad();
+    console.log('currentUser:', p ? {name:p.name, isCoach:p.isCoach, isParent:p.isParent, group:p.group} : '(none)');
+    var agg = aggPlayers(logs);
+    console.log('aggPlayers:', agg.length, 'players |', 'totalPts:', agg.reduce(function(s,p){return s+p.pts},0));
+    console.groupEnd();
+    return '✅ State dumped above';
+  },
+  // Time a function call
+  time: function(label){ if(!HNH_DEBUG) return; console.time('[HNH] '+label); },
+  timeEnd: function(label){ if(!HNH_DEBUG) return; console.timeEnd('[HNH] '+label); }
+};
+// Enable debug from console: HNH_DEBUG=true
+// Dump state from console:  dbg.state()
+
+// ████████████████████████████████████████████████████████████████████████
+// §4  STORAGE & OFFLINE — Cache, localStorage, offline queue
+// ████████████████████████████████████████████████████████████████████████
 function safeSave(key, val){
   try{ localStorage.setItem(key, val); return true; }
   catch(e){
@@ -1476,6 +1588,7 @@ function clearOfflineQueue(){
 async function syncOfflineQueue(){
   var q=getOfflineQueue();
   if(!q.length) return;
+  dbg.log('offline', 'Syncing '+q.length+' offline entries');
   var failed=[];
   for(var i=0;i<q.length;i++){
     var res=await SB.from('logs').insert([q[i]]);
@@ -1496,9 +1609,13 @@ function loadAnnounceFallback(){try{announcement=localStorage.getItem('hhc_annou
 function saveBonusFallback(){safeSave('hhc_bonus_fb',JSON.stringify(bonusEvent));}
 function loadBonusFallback(){try{var b=JSON.parse(localStorage.getItem('hhc_bonus_fb')||'null');bonusEvent=b;}catch(e){}}
 
-// ════════════════════════════════════════
-// DATE HELPERS
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §5  UTILITIES — Date helpers, formatting, haptic feedback
+// ████████████████████████████████████████████████████████████████████████
+
+// Haptic feedback — short vibration for physical button confirmation
+function haptic(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||20); }catch(e){} }
+
 function weekWin(){
   var n=new Date();
   function fmt(x){return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
@@ -1523,10 +1640,11 @@ function onDateChange(){
   }
 }
 
-// ════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §6  INIT & BOOTSTRAP
+// ████████████████████████████████████████████████████████████████████████
 window.addEventListener('load', function(){
+  dbg.log('init', '═══ App loading ═══');
   loadRoster();
   buildRoster(); buildActs(); setupDate();
   wireEvents();
@@ -1541,6 +1659,7 @@ window.addEventListener('load', function(){
 
   if(!navigator.onLine){
     // ── OFFLINE MODE ──
+    dbg.log('init', 'OFFLINE mode — loading from cache');
     document.getElementById('offline-banner').classList.add('on');
     var cached = cLoad(true); // load without expiry
     if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); }
@@ -1550,6 +1669,7 @@ window.addEventListener('load', function(){
     if(coachOn) renderCoach();
   } else {
     // ── ONLINE MODE ──
+    dbg.log('init', 'ONLINE mode — fetching from Supabase');
     var cached = cLoad();
     if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); renderLb(); hideLb(); }
 
@@ -1629,9 +1749,9 @@ window.addEventListener('load', function(){
 
 function hideLb(){ document.getElementById('loading-bar').style.display='none'; }
 
-// ════════════════════════════════════════
-// WIRE ALL EVENTS (no inline onclick)
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §6b WIRE EVENTS — All event listeners (no inline onclick)
+// ████████████████████████████████████████████████████████████████████████
 function wireEvents(){
   // Nav
   document.getElementById('nav-log').addEventListener('click', function(){ goPage('log', this); });
@@ -1653,12 +1773,15 @@ function wireEvents(){
   // Sign out
   document.getElementById('signout-btn').addEventListener('click', doSignOut);
 
-  // Makes
-  document.getElementById('makes-minus').addEventListener('click', function(){ adjMakes(-10); });
-  document.getElementById('makes-plus').addEventListener('click', function(){ adjMakes(10); });
+  // Makes — expanded buttons with haptic
+  document.getElementById('makes-m25').addEventListener('click', function(){ haptic(); adjMakes(-25); });
+  document.getElementById('makes-m10').addEventListener('click', function(){ haptic(); adjMakes(-10); });
+  document.getElementById('makes-p10').addEventListener('click', function(){ haptic(); adjMakes(10); });
+  document.getElementById('makes-p25').addEventListener('click', function(){ haptic(); adjMakes(25); });
+  document.getElementById('makes-p50').addEventListener('click', function(){ haptic(); adjMakes(50); });
 
   // Log submit
-  document.getElementById('log-btn').addEventListener('click', submitLog);
+  document.getElementById('log-btn').addEventListener('click', function(){ haptic(30); submitLog(); });
 
   // Leaderboard tabs
   document.getElementById('lb-pts-btn').addEventListener('click', function(){ lbSwitch('pts', this); });
@@ -1711,9 +1834,9 @@ function wireEvents(){
   });
 }
 
-// ════════════════════════════════════════
-// ROSTER
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §7  ROSTER & PLAYER SELECT
+// ████████████████████████████████████████████████████████████████████████
 function buildRoster(){
   ['player-select','stats-sel'].forEach(function(id){
     var el = document.getElementById(id);
@@ -1741,9 +1864,9 @@ function onPlayerPick(){
 }
 document.getElementById('player-select').addEventListener('change', onPlayerPick);
 
-// ════════════════════════════════════════
-// DATE SETUP
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §8  DATE SETUP — Picker config, window enforcement
+// ████████████████████████████████████████████████████████████████████████
 function setupDate(){
   var w = weekWin(), el = document.getElementById('log-date');
   if(coachModeOn){
@@ -1760,12 +1883,13 @@ function setupDate(){
   document.getElementById('date-ok-msg').style.display = 'none';
 }
 
-// ════════════════════════════════════════
-// FETCH
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §9  DATA FETCH — Supabase queries, log retrieval
+// ████████████████████████████████████████████████████████████████████████
 var SEASON_START = '2026-04-01';
 
 async function fetchLogs(){
+  dbg.time('fetchLogs');
   var all = [], batchSize = 1000, from = 0, done = false;
   while(!done){
     var r = await SB.from('logs').select('*')
@@ -1779,11 +1903,13 @@ async function fetchLogs(){
     else from += batchSize;
   }
   logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); invalidateAggCache(); cSave(logs);
+  dbg.timeEnd('fetchLogs');
+  dbg.log('fetch', 'Loaded '+logs.length+' logs ('+all.length+' raw)');
 }
 
-// ════════════════════════════════════════
-// ACTIVITIES
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §10 ACTIVITIES & COUNTERS — Grid, toggles, point calc
+// ████████████████████████████████████████████████████████████████████████
 function buildActs(){
   var g = document.getElementById('act-grid'); g.innerHTML = '';
   ACTS.forEach(function(a){
@@ -1805,6 +1931,7 @@ function buildActs(){
 }
 
 function toggleAct(id){
+  haptic();
   actSel[id] = !actSel[id];
   document.getElementById('ab-'+id).classList.toggle('on', !!actSel[id]);
   if(!actSel[id]) delete ctrs[id];
@@ -1829,6 +1956,7 @@ function buildCtrs(){
   });
   f.querySelectorAll('[data-ctr]').forEach(function(btn){
     btn.addEventListener('click', function(){
+      haptic();
       adjCtr(this.dataset.ctr, parseInt(this.dataset.dir));
     });
   });
@@ -1857,13 +1985,14 @@ function calcPts(){
   return v;
 }
 
-// ════════════════════════════════════════
-// SUBMIT LOG
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §10b SUBMIT LOG — Validation, offline queue, race guard
+// ████████████████████████████████████████████████████████████████████████
 var submitInFlight = false;
 async function submitLog(){
   if(submitInFlight){ toast('Save in progress...'); return; }
   submitInFlight = true;
+  dbg.log('submit', 'submitLog started');
   var name = document.getElementById('player-select').value.trim();
   var date = document.getElementById('log-date').value;
   if(!name || name==='__other__'){ toast('Select a player first!'); submitInFlight=false; return; }
@@ -1924,13 +2053,15 @@ async function submitLog(){
   if(coachOn) renderCoach();
   if(coachModeOn){ toast('Logged for '+name+' ✅'); }
   else { showSplash(name, pts); }
+  dbg.log('submit', 'submitLog success', {name:name, pts:pts, date:date, offline:false});
   submitInFlight=false;
 }
 
-// ════════════════════════════════════════
-// STATS
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §11 STATS PAGE — Player stats, badges, recent activity
+// ████████████████████████████████████████████████████████████████████████
 function renderStats(){
+  dbg.log('stats', 'renderStats called');
   var name = document.getElementById('stats-sel').value.toLowerCase();
   var body = document.getElementById('stats-body');
   if(!name){ body.innerHTML='<div class="es"><div class="ei">🏀</div><p>Select a player above.</p></div>'; return; }
@@ -2025,9 +2156,9 @@ function renderStats(){
 
 function getTier(p){ var t=TIERS[0]; TIERS.forEach(function(x){ if(p>=x.p) t=x; }); return t; }
 
-// ════════════════════════════════════════
-// LEADERBOARD
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §12 LEADERBOARD — Neighborhood view, movement, jumpers
+// ████████████████████████████████████████████████████████████████████████
 function lbSwitch(mode, el){
   lbMode = mode;
   document.querySelectorAll('.tp').forEach(function(t){ t.classList.remove('on'); });
@@ -2043,6 +2174,7 @@ function lbGroupSwitch(grp, el){
 }
 
 function renderLb(){
+  dbg.time('renderLb');
   var allPl = aggPlayers(logs);
   var pl = (lbGroup==='all') ? allPl : allPl.filter(function(p){ return p.group===lbGroup; });
   pl = pl.sort(function(a,b){
@@ -2178,8 +2310,11 @@ function renderLb(){
     var myRow = body.querySelector('.lbrow-me');
     if(myRow) setTimeout(function(){ myRow.scrollIntoView({block:'nearest',behavior:'smooth'}); }, 200);
   }
+  dbg.timeEnd('renderLb');
+  dbg.log('lb', 'Rendered '+pl.length+' players, meIdx='+meIdx);
 }
 
+// §5b ESCAPE FUNCTIONS (used throughout — do not move)
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
@@ -2211,10 +2346,11 @@ function aggPlayers(ls){
 }
 function invalidateAggCache(){ _aggCache = null; _aggCacheLen = -1; }
 
-// ════════════════════════════════════════
-// COACH VIEW
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §13 COACH VIEW — Feed, directory, actions
+// ████████████████████████████████████████████████████████████████████████
 function renderCoach(){
+  dbg.log('coach', 'renderCoach called, coachOn='+coachOn);
   var body = document.getElementById('coach-body');
   if(!coachOn){
     body.innerHTML = '<div class="cu"><h2>Coach Access</h2><p>Enter the coach PIN to unlock full oversight.</p>'
@@ -2311,9 +2447,9 @@ function renderCoach(){
   if(rst) rst.addEventListener('click', resetData);
 }
 
-// ════════════════════════════════════════
-// EDIT LOG
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §14 EDIT & DELETE LOGS — Modal editors, inline edit
+// ████████████████████████████████████████████████████████████████████████
 var _editingPlayer = null;
 
 function openEditPlayer(name){
@@ -2398,9 +2534,9 @@ async function deleteLog(id){
   toast('Entry deleted');
 }
 
-// ════════════════════════════════════════
-// BONUS EVENT
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §15 BONUS EVENTS — Create, clear, load from Supabase
+// ████████████████████████████████████████████████████████████████████████
 function openBonusModal(){
   var sel = document.getElementById('bonus-act-sel');
   sel.innerHTML = ACTS.map(function(a){ return '<option value="'+a.id+'">'+a.name+'</option>'; }).join('');
@@ -2444,9 +2580,9 @@ async function loadBonusFromDB(){
   buildActs();
 }
 
-// ════════════════════════════════════════
-// ANNOUNCEMENTS (Supabase-backed)
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §16 ANNOUNCEMENTS — Create, clear, load from Supabase
+// ████████████████████████████████████████████████████████████████████████
 var _ANNOUNCE_KEY = '__ANNOUNCE__';
 
 async function saveAnnounce(){
@@ -2490,9 +2626,9 @@ function showAnnouncement(){
   } else { el.style.display = 'none'; }
 }
 
-// ════════════════════════════════════════
-// ROSTER MANAGEMENT
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §16b ROSTER MANAGEMENT (legacy)
+// ████████████████████████████████████████████████████████████████████████
 function addPlayer(){
   var inp = document.getElementById('add-player-inp');
   var name = inp.value.trim();
@@ -2507,9 +2643,9 @@ function deletePlayer(name){
   saveRoster(); buildRoster(); renderCoach(); toast(name+' removed');
 }
 
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
 // EXPORTS
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
 function exportCSV(){
   var rows=[['Name','Date','Activities','Points','Makes','Logged At']];
   [].concat(logs).sort(function(a,b){return(a.date||'').localeCompare(b.date||'')||a.ts-b.ts;}).forEach(function(l){
@@ -2522,9 +2658,9 @@ function exportCSV(){
   a.click(); URL.revokeObjectURL(a.href); toast('📄 CSV downloaded!');
 }
 
-// ════════════════════════════════════════
-// COACH AUTH & CONTROLS
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §17 COACH AUTH — PIN verify, lock, override, reset
+// ████████████████████████████████████████████████████████████████████████
 async function tryPin(){
   var p = document.getElementById('cpin').value;
   document.getElementById('cpin').value='';
@@ -2548,9 +2684,9 @@ async function resetData(){
   renderLb(); renderCoach(); toast('Data cleared! 🏀');
 }
 
-// ════════════════════════════════════════
-// SPLASH
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §19 SPLASH & REWARDS — Celebration, confetti, shirt size
+// ████████████████████████████████████████████████████████████████████████
 function showSplash(name, ptsEarned){
   var pl = logs.filter(function(l){ return l.name.toLowerCase()===name.toLowerCase(); });
   var tp = pl.reduce(function(s,l){ return s+l.pts; },0), prev = tp-ptsEarned;
@@ -2637,9 +2773,9 @@ function closeSplash(){
   goPage('lb', document.getElementById('nav-lb'));
 }
 
-// ════════════════════════════════════════
-// SIGN IN
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §20 SIGN IN / SIGN OUT — Player, parent, coach flows
+// ████████████████████████████████████████████████████████████████████████
 function siSwitch(role){
   var isP = role==='player';
   var isPar = role==='parent';
@@ -2653,6 +2789,7 @@ function siSwitch(role){
 }
 
 function doSignIn(){
+  dbg.log('auth', 'doSignIn called');
   var fn = document.getElementById('si-fn').value.trim();
   var ln = document.getElementById('si-ln').value.trim();
   var em = document.getElementById('si-em').value.trim();
@@ -2777,6 +2914,7 @@ function enterCoachMode(name){
 }
 
 function doSignOut(){
+  dbg.log('auth', 'doSignOut called');
   try{localStorage.removeItem('hhc_p');}catch(e){}
   coachOn=false; coachModeOn=false;
   document.getElementById('welcome-bar').style.display='none';
@@ -2789,9 +2927,9 @@ function doSignOut(){
   setupDate(); document.getElementById('si').style.display='flex';
 }
 
-// ════════════════════════════════════════
-// AWARD BONUS
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §21 AWARD BONUS POINTS — Manual point awards
+// ████████████████████████████████████████████████████████████████████████
 function openAwardBonusModal(){
   var sel = document.getElementById('award-player-sel');
   // Build list from all players who have logged + roster, deduplicated
@@ -2831,9 +2969,9 @@ async function saveAwardBonus(){
 }
 
 
-// ════════════════════════════════════════
-// SHIRT SIZE & AWARD EMAIL
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §19b SHIRT SIZE & AWARD EMAIL
+// ████████████████████████████████████████████████████████████████████████
 function submitShirtSize(){
   var size = document.getElementById('shirt-size-sel').value;
   if(!size){ toast('Please select a shirt size!'); return; }
@@ -2869,10 +3007,11 @@ function sendAwardEmail(playerName, playerEmail, rewardName, rewardEmoji, shirtS
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
 
-// ════════════════════════════════════════
-// NAV
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §22 NAVIGATION & UI — Page switching, modals
+// ████████████████████████████████████████████████████████████████████████
 function goPage(name, btn){
+  dbg.log('nav', 'goPage → '+name);
   document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('pg-'+name).classList.add('on');
@@ -2884,13 +3023,15 @@ function goPage(name, btn){
   trackPageView(name);
 }
 
-// ════════════════════════════════════════
-// ANALYTICS (Coach Only)
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §23 ANALYTICS — DAU, retention, cohort, page tracking
+// ████████████████████████████████████████████████████████████████████████
 var _analyticsRendered = false;
 
 function renderAnalytics(){
   if(!coachOn) return;
+  dbg.time('renderAnalytics');
+  dbg.log('analytics', 'renderAnalytics called');
   var body = document.getElementById('analytics-body');
 
   var allPl = aggPlayers(logs);
@@ -3230,6 +3371,7 @@ function renderAnalytics(){
 
   body.innerHTML = html;
   _analyticsRendered = true;
+  dbg.timeEnd('renderAnalytics');
 
   // Load page view data async
   fetchTrackingData().then(function(tracks){
@@ -3308,9 +3450,9 @@ function renderAnalytics(){
   });
 }
 
-// ════════════════════════════════════════
-// PAGE VIEW TRACKING
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §23b PAGE VIEW TRACKING — Event logging
+// ████████████████████████████████████████████████████████████████████████
 var _trackCache = {};
 function trackPageView(page){
   if(!page || page==='coach' || page==='analytics') return; // don't track coach-only pages
@@ -3346,9 +3488,9 @@ async function fetchTrackingData(){
   return all;
 }
 
-// ════════════════════════════════════════
-// PLAYER DIRECTORY (Coach Only)
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §23c PLAYER DIRECTORY — Profiles, email lookup
+// ████████████████████████████████████████████████████████████████████████
 async function fetchProfiles(){
   var all=[], from=0, batchSize=1000, done=false;
   while(!done){
@@ -3396,16 +3538,26 @@ function renderDirectory(container){
 
 function fmtN(n){ return n.toLocaleString(); }
 
-// ════════════════════════════════════════
-// TOAST
-// ════════════════════════════════════════
+// ████████████████████████████████████████████████████████████████████████
+// §22b TOAST — Notification popup
+// ████████████████████████████████████████████████████████████████████████
 function toast(msg){
   var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
   setTimeout(function(){ t.classList.remove('on'); }, 2600);
 }
-</script>
 
+// ████████████████████████████████████████████████████████████████████████
+// DEBUG QUICK REFERENCE (open browser console and type these)
+// ────────────────────────────────────────────────────────────────────────
+//   HNH_DEBUG = true        → Enable verbose logging for all actions
+//   HNH_DEBUG = false       → Disable logging (default)
+//   dbg.state()             → Dump full app state (logs, user, coach, etc.)
+//   logs                    → Raw logs array
+//   aggPlayers(logs)        → Aggregated player list
+//   logs.filter(l=>l.name.toLowerCase()==='jacob panico')  → One player's logs
+// ████████████████████████████████████████████████████████████████████████
+</script>
 
 <script>
 (function(){
