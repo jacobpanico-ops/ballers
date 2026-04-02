@@ -1552,7 +1552,7 @@ function getNewBadges(name, ptsEarned){
 }
 
 var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'all';
-var coachOn = false, coachModeOn = false, logs = [];
+var coachOn = false, coachModeOn = false, coachPin = '', logs = [];
 var bonusEvent = null;
 var announcement = '';
 
@@ -2648,8 +2648,8 @@ async function saveEditLog(){
   var pts = parseInt(document.getElementById('edit-pts').value)||0;
   var mk = parseInt(document.getElementById('edit-makes').value)||0;
   if(!name||!date){ toast('Fill all fields'); return; }
-  var res = await SB.from('logs').update({name:name,date:date,acts:acts,pts:pts,makes:mk}).eq('id',id);
-  if(res.error){ toast('Update failed'); return; }
+  var res = await SB.rpc('coach_update_log', {pin_attempt:coachPin, log_id:id, new_name:name, new_date:date, new_acts:acts, new_pts:pts, new_makes:mk});
+  if(res.error || res.data===false){ toast('Update failed'+(res.data===false?' — bad PIN':'')); return; }
   var idx = logs.findIndex(function(l){ return l.id===id; });
   if(idx>=0) logs[idx] = Object.assign({},logs[idx],{name:name,date:date,acts:acts,pts:pts,makes:mk});
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
@@ -2660,8 +2660,8 @@ async function saveEditLog(){
 
 async function deleteLog(id){
   if(!confirm('Delete this log entry?')) return;
-  var res = await SB.from('logs').delete().eq('id',id);
-  if(res.error){ toast('Delete failed'); return; }
+  var res = await SB.rpc('coach_delete_log', {pin_attempt:coachPin, log_id:id});
+  if(res.error || res.data===false){ toast('Delete failed'+(res.data===false?' — bad PIN':'')); return; }
   logs = logs.filter(function(l){ return l.id!==id; });
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
   var ss = document.getElementById('stats-sel').value.toLowerCase();
@@ -2689,16 +2689,15 @@ async function saveBonusEvent(){
   bonusEvent = {actId:actId, multiplier:parseFloat(mult), label:label, expires:expires};
   var btn = document.getElementById('bonus-save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
-  await SB.from('logs').delete().eq('name', _BONUS_KEY);
-  var payload = {name:_BONUS_KEY, date:new Date().toISOString().slice(0,10), acts:JSON.stringify(bonusEvent), pts:0, makes:0, group:'', ts:Date.now()};
-  await SB.from('logs').insert([payload]);
+  var res = await SB.rpc('coach_save_bonus', {pin_attempt:coachPin, bonus_json:JSON.stringify(bonusEvent)});
+  if(res.error || res.data===false){ toast('Bonus save failed'); btn.disabled=false; btn.textContent='Activate'; return; }
   btn.disabled = false; btn.textContent = 'Activate';
   closeModal('bonus-modal'); buildActs(); renderCoach();
   toast('Bonus event activated ⚡');
 }
 async function clearBonus(){
   bonusEvent = null;
-  await SB.from('logs').delete().eq('name', _BONUS_KEY);
+  await SB.rpc('coach_clear_bonus', {pin_attempt:coachPin});
   buildActs(); renderCoach(); toast('Bonus cleared');
 }
 async function loadBonusFromDB(){
@@ -2708,7 +2707,7 @@ async function loadBonusFromDB(){
       var b = JSON.parse(res.data[0].acts);
       var today = new Date().toISOString().slice(0,10);
       if(!b.expires || b.expires >= today){ bonusEvent = b; }
-      else { bonusEvent = null; SB.from('logs').delete().eq('name', _BONUS_KEY); }
+      else { bonusEvent = null; SB.rpc('cleanup_expired_bonus'); }
     } catch(e){ bonusEvent = null; }
   } else { bonusEvent = null; }
   saveBonusFallback();
@@ -2725,18 +2724,15 @@ async function saveAnnounce(){
   if(!txt){ clearAnnounce(); return; }
   var btn = document.getElementById('announce-save-btn');
   btn.disabled = true; btn.textContent = 'Publishing...';
-  // Remove any existing announcement rows
-  await SB.from('logs').delete().eq('name', _ANNOUNCE_KEY);
-  // Insert new
-  var payload = {name:_ANNOUNCE_KEY, date:new Date().toISOString().slice(0,10), acts:txt, pts:0, makes:0, group:'', ts:Date.now()};
-  await SB.from('logs').insert([payload]);
+  var res = await SB.rpc('coach_save_announce', {pin_attempt:coachPin, msg:txt});
+  if(res.error || res.data===false){ toast('Publish failed'); btn.disabled=false; btn.textContent='Publish'; return; }
   announcement = txt;
   btn.disabled = false; btn.textContent = 'Publish';
   closeModal('announce-modal'); showAnnouncement(); renderCoach();
   toast('Announcement published 📣');
 }
 async function clearAnnounce(){
-  await SB.from('logs').delete().eq('name', _ANNOUNCE_KEY);
+  await SB.rpc('coach_save_announce', {pin_attempt:coachPin, msg:''});
   announcement = '';
   closeModal('announce-modal'); showAnnouncement(); renderCoach();
   toast('Announcement cleared');
@@ -2800,21 +2796,21 @@ async function tryPin(){
   var p = document.getElementById('cpin').value;
   document.getElementById('cpin').value='';
   var valid = await verifyPin(p);
-  p='';
   if(valid){
+    coachPin=p; p='';
     try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
     coachOn=true; renderCoach();
   }
-  else { toast('Wrong PIN!'); }
+  else { p=''; toast('Wrong PIN!'); }
 }
-function lockCoach(){ coachOn=false; coachModeOn=false; document.getElementById('nav-analytics').classList.remove('show'); setupDate(); renderCoach(); }
+function lockCoach(){ coachOn=false; coachModeOn=false; coachPin=''; document.getElementById('nav-analytics').classList.remove('show'); setupDate(); renderCoach(); }
 function toggleCoachMode(){ coachModeOn=!coachModeOn; setupDate(); renderCoach(); toast(coachModeOn?'Override ON — any date allowed':'Override OFF'); }
 
 async function resetData(){
   if(!confirm('Reset ALL data? This cannot be undone.')) return;
   if(prompt('Type RESET to confirm:')!=='RESET'){ toast('Cancelled'); return; }
-  var r = await SB.from('logs').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  if(r.error){ toast('Error resetting'); return; }
+  var r = await SB.rpc('coach_reset_data', {pin_attempt:coachPin});
+  if(r.error || r.data===false){ toast('Error resetting'+(r.data===false?' — bad PIN':'')); return; }
   logs=[]; invalidateAggCache(); try{localStorage.removeItem('hhc_c');}catch(e){}
   renderLb(); renderCoach(); toast('Data cleared! 🏀');
 }
@@ -2999,9 +2995,7 @@ function doSignIn(){
   var p = {first:fn,last:ln,email:em,name:fn+' '+ln,group:grp,isCoach:false};
   pSave(p); document.getElementById('si').style.display='none'; applyPlayer(p);
   // Save profile to Supabase so coach can see email in directory
-  SB.from('logs').delete().eq('name','__PROFILE__').eq('acts',fn+' '+ln).then(function(){
-    SB.from('logs').insert([{name:'__PROFILE__',date:new Date().toISOString().slice(0,10),acts:fn+' '+ln,pts:0,makes:0,group:grp+'|'+em,ts:Date.now()}]);
-  });
+  SB.rpc('upsert_profile', {full_name:fn+' '+ln, profile_date:new Date().toISOString().slice(0,10), grp_email:grp+'|'+em});
 }
 
 function doParentIn(){
@@ -3063,10 +3057,10 @@ async function doCoachIn(){
   if(!cn){ err.textContent='Enter your name'; return; }
   err.textContent='Checking...';
   var valid = await verifyPin(cp);
-  // Clear PIN from DOM and memory immediately
+  // Clear PIN from DOM immediately; keep in coachPin for RPC calls
   document.getElementById('si-cp').value='';
-  cp='';
-  if(!valid){ err.textContent='Wrong PIN — try again'; return; }
+  if(!valid){ cp=''; err.textContent='Wrong PIN — try again'; return; }
+  coachPin=cp; cp='';
   err.textContent='';
   // Scrub any query params from URL to prevent PIN leaking in history
   try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
@@ -3180,15 +3174,14 @@ async function saveAwardBonus(){
   var btn = document.getElementById('award-save-btn');
   btn.disabled = true; btn.textContent = 'Awarding...';
   var today = new Date().toISOString().slice(0,10);
-  var payload = [{name:name, date:today, acts:reason, pts:pts, makes:0, group:'', ts:Date.now()}];
-  var res = await SB.from('logs').insert(payload);
-  if(res.error){
+  var res = await SB.rpc('coach_insert_log', {pin_attempt:coachPin, log_name:name, log_date:today, log_acts:reason, log_pts:pts, log_makes:0, log_group:''});
+  if(res.error || res.data===false){
     await new Promise(function(r){ setTimeout(r,1800); });
-    res = await SB.from('logs').insert(payload);
+    res = await SB.rpc('coach_insert_log', {pin_attempt:coachPin, log_name:name, log_date:today, log_acts:reason, log_pts:pts, log_makes:0, log_group:''});
   }
   btn.disabled = false; btn.textContent = 'Award It 🏆';
-  if(res.error){ toast('Save failed — check connection'); return; }
-  logs.push(payload[0]); invalidateAggCache(); cSave(logs);
+  if(res.error || res.data===false){ toast('Save failed — check connection'); return; }
+  logs.push({name:name, date:today, acts:reason, pts:pts, makes:0, group:'', ts:Date.now()}); invalidateAggCache(); cSave(logs);
   closeModal('award-bonus-modal');
   renderCoach(); renderLb();
   toast('🏆 '+pts+' bonus pts awarded to '+name+'!');
