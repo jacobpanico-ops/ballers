@@ -3758,6 +3758,12 @@ async function fetchProfiles(){
     var parts=(row.group||'').split('|');
     profiles.push({name:name, group:parts[0]||'', email:parts[1]||''});
   });
+  // Also include any player who has logged activity but has no __PROFILE__ row
+  logs.forEach(function(l){
+    if(!l.name || seen[l.name.toLowerCase()]) return;
+    seen[l.name.toLowerCase()] = true;
+    profiles.push({name:l.name, group:l.group||'', email:''});
+  });
   return profiles.sort(function(a,b){ return a.name.localeCompare(b.name); });
 }
 
