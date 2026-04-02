@@ -2524,7 +2524,7 @@ function renderCoach(){
   else {
     feedHtml += ROSTER.map(function(n){
       var entry = loggedNames[n.toLowerCase()];
-      return '<div class="feed-row">'
+      return '<div class="feed-row" style="cursor:pointer" data-editname="'+escapeAttr(n)+'">'
         +'<div class="feed-dot'+(entry?'':' absent')+'"></div>'
         +'<div><div class="feed-name">'+escapeHtml(n)+'</div>'
         +(entry?'<div class="feed-act">'+escapeHtml(entry.acts)+'</div>':'<div class="feed-act" style="color:var(--text-muted)">Not logged today</div>')
@@ -2580,6 +2580,11 @@ function renderCoach(){
   if(lck) lck.addEventListener('click', lockCoach);
   var rst = document.getElementById('reset-data-btn');
   if(rst) rst.addEventListener('click', resetData);
+
+  // Feed rows → tap to edit player's logs
+  document.querySelectorAll('[data-editname]').forEach(function(row){
+    row.addEventListener('click', function(){ openEditPlayer(this.dataset.editname); });
+  });
 }
 
 // ████████████████████████████████████████████████████████████████████████
