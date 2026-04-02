@@ -2524,7 +2524,7 @@ function renderCoach(){
   else {
     feedHtml += ROSTER.map(function(n){
       var entry = loggedNames[n.toLowerCase()];
-      return '<div class="feed-row" style="cursor:pointer" data-editname="'+escapeAttr(n)+'">'
+      return '<div class="feed-row">'
         +'<div class="feed-dot'+(entry?'':' absent')+'"></div>'
         +'<div><div class="feed-name">'+escapeHtml(n)+'</div>'
         +(entry?'<div class="feed-act">'+escapeHtml(entry.acts)+'</div>':'<div class="feed-act" style="color:var(--text-muted)">Not logged today</div>')
@@ -2580,11 +2580,6 @@ function renderCoach(){
   if(lck) lck.addEventListener('click', lockCoach);
   var rst = document.getElementById('reset-data-btn');
   if(rst) rst.addEventListener('click', resetData);
-
-  // Feed rows → tap to edit player's logs
-  document.querySelectorAll('[data-editname]').forEach(function(row){
-    row.addEventListener('click', function(){ openEditPlayer(this.dataset.editname); });
-  });
 }
 
 // ████████████████████████████████████████████████████████████████████████
@@ -2804,7 +2799,19 @@ async function tryPin(){
   if(valid){
     coachPin=p; p='';
     try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
-    coachOn=true; renderCoach();
+    coachOn=true; loadRoster();
+    fetchProfiles().then(function(profiles){
+      if(profiles.length){
+        var names = profiles.map(function(p){ return p.name; });
+        var seen = {};
+        ROSTER.forEach(function(n){ seen[n.toLowerCase()] = n; });
+        names.forEach(function(n){ if(!seen[n.toLowerCase()]){ seen[n.toLowerCase()] = n; } });
+        ROSTER = Object.values(seen).sort();
+        saveRoster();
+        renderCoach();
+      }
+    });
+    renderCoach();
   }
   else { p=''; toast('Wrong PIN!'); }
 }
@@ -3132,6 +3139,19 @@ function applyPlayer(p){
 
 function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
+  // Auto-populate roster from Supabase player profiles
+  fetchProfiles().then(function(profiles){
+    if(profiles.length){
+      var names = profiles.map(function(p){ return p.name; });
+      // Merge with any existing roster names (dedup)
+      var seen = {};
+      ROSTER.forEach(function(n){ seen[n.toLowerCase()] = n; });
+      names.forEach(function(n){ if(!seen[n.toLowerCase()]){ seen[n.toLowerCase()] = n; } });
+      ROSTER = Object.values(seen).sort();
+      saveRoster();
+      renderCoach();
+    }
+  });
   document.getElementById('hdr-right').innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;padding:4px 10px;border:1px solid var(--gold-border);border-radius:6px;">Coach</div>';
   document.getElementById('nav-coach').style.display = '';
   document.getElementById('nav-analytics').classList.add('show');
@@ -3751,13 +3771,17 @@ function renderDirectory(container){
     var rows=profiles.map(function(p){
       var gc=p.group==='hs'?'grp-hs':p.group==='jh'?'grp-jh':p.group==='yth'?'grp-yth':'';
       var gl=p.group==='hs'?'HS':p.group==='jh'?'JH':p.group==='yth'?'YTH':'—';
-      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,203,5,0.06);">'
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,203,5,0.06);cursor:pointer;" data-editname="'+escapeAttr(p.name)+'">'
         +'<div style="flex:1;"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;">'+escapeHtml(p.name)+'</div>'
         +'<div style="font-size:12px;color:var(--text-dim);margin-top:2px;">'+escapeHtml(p.email)+'</div></div>'
         +'<span class="grp-badge '+gc+'">'+gl+'</span>'
+        +'<span style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;">EDIT</span>'
         +'</div>';
     }).join('');
     container.innerHTML='<div class="ct">📋 Player Directory — '+profiles.length+' Players</div>'+rows;
+    container.querySelectorAll('[data-editname]').forEach(function(row){
+      row.addEventListener('click', function(){ openEditPlayer(this.dataset.editname); });
+    });
   });
 }
 
