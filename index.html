@@ -2823,7 +2823,7 @@ async function resetData(){
   if(prompt('Type RESET to confirm:')!=='RESET'){ toast('Cancelled'); return; }
   var r = await SB.rpc('coach_reset_data', {pin_attempt:coachPin});
   if(r.error || r.data===false){ toast('Error resetting'+(r.data===false?' — bad PIN':'')); return; }
-  logs=[]; invalidateAggCache(); try{localStorage.removeItem('hhc_c');}catch(e){}
+  logs=[]; ROSTER=[]; invalidateAggCache(); try{localStorage.removeItem('hhc_c');localStorage.removeItem('hhc_roster');}catch(e){}
   renderLb(); renderCoach(); toast('Data cleared! 🏀');
 }
 
