@@ -1219,6 +1219,20 @@ select.inp { cursor: pointer; }
       <div class="si-row" style="margin-bottom:20px"><label class="si-lbl">Coach PIN</label><input class="si-inp" id="si-cp" type="password" placeholder="••••" style="letter-spacing:8px;font-size:20px;"></div>
       <button class="si-go-btn" id="si-cgo">Enter 📋</button>
       <div class="si-err" id="si-cerr"></div>
+      <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--gold-border);">
+        <button id="si-ac-toggle" style="background:none;border:none;color:var(--gold);font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-transform:uppercase;">Assistant Coach? Sign in here →</button>
+      </div>
+    </div>
+    <div class="si-form" id="si-acf" style="display:none">
+      <div class="si-title">Assistant Coach</div>
+      <div class="si-desc">View-only access — follow player progress, leaderboards, and stats. No PIN required.</div>
+      <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-acn" type="text" autocomplete="name" autocorrect="off" placeholder="Coach Davis"></div>
+      <div class="si-row" style="margin-bottom:20px"><label class="si-lbl">Email</label><input class="si-inp" id="si-acem" type="email" autocomplete="email" placeholder="coach.davis@email.com"></div>
+      <button class="si-go-btn" id="si-acgo">View Dashboard 📋</button>
+      <div class="si-err" id="si-acerr"></div>
+      <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--gold-border);">
+        <button id="si-hc-toggle" style="background:none;border:none;color:var(--gold);font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-transform:uppercase;">← Head Coach? Enter PIN here</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1581,7 +1595,7 @@ var dbg = {
     console.log('navigator.onLine:', navigator.onLine);
     console.log('offlineQueue:', getOfflineQueue().length, 'items');
     var p = pLoad();
-    console.log('currentUser:', p ? {name:p.name, isCoach:p.isCoach, isParent:p.isParent, group:p.group} : '(none)');
+    console.log('currentUser:', p ? {name:p.name, isCoach:p.isCoach, isAsstCoach:p.isAsstCoach, isParent:p.isParent, group:p.group} : '(none)');
     var agg = aggPlayers(logs);
     console.log('aggPlayers:', agg.length, 'players |', 'totalPts:', agg.reduce(function(s,p){return s+p.pts},0));
     console.groupEnd();
@@ -1713,6 +1727,7 @@ window.addEventListener('load', function(){
   if(p){
     document.getElementById('si').style.display = 'none';
     if(p.isCoach){ enterCoachMode(p.name); }
+    else if(p.isAsstCoach){ applyAsstCoach(p); }
     else if(p.isParent){ applyParent(p); }
     else { applyPlayer(p); }
   }
@@ -1830,6 +1845,17 @@ function wireEvents(){
   document.getElementById('si-go').addEventListener('click', doSignIn);
   document.getElementById('si-pargo').addEventListener('click', doParentIn);
   document.getElementById('si-cgo').addEventListener('click', doCoachIn);
+  document.getElementById('si-acgo').addEventListener('click', doAsstCoachIn);
+
+  // Assistant coach toggle
+  document.getElementById('si-ac-toggle').addEventListener('click', function(){
+    document.getElementById('si-cf').style.display='none';
+    document.getElementById('si-acf').style.display='block';
+  });
+  document.getElementById('si-hc-toggle').addEventListener('click', function(){
+    document.getElementById('si-acf').style.display='none';
+    document.getElementById('si-cf').style.display='block';
+  });
 
   // Sign out
   document.getElementById('signout-btn').addEventListener('click', doSignOut);
@@ -1887,6 +1913,7 @@ function wireEvents(){
   document.getElementById('si-em').addEventListener('keydown', function(e){ if(e.key==='Enter') doSignIn(); });
   document.getElementById('si-parem').addEventListener('keydown', function(e){ if(e.key==='Enter') doParentIn(); });
   document.getElementById('si-cp').addEventListener('keydown', function(e){ if(e.key==='Enter') doCoachIn(); });
+  document.getElementById('si-acem').addEventListener('keydown', function(e){ if(e.key==='Enter') doAsstCoachIn(); });
 
   // Analytics refresh
   document.getElementById('an-refresh-btn').addEventListener('click', function(){
@@ -2951,6 +2978,7 @@ function siSwitch(role){
   document.getElementById('si-pf').style.display = isP ? 'block' : 'none';
   document.getElementById('si-parf').style.display = isPar ? 'block' : 'none';
   document.getElementById('si-cf').style.display = isC ? 'block' : 'none';
+  document.getElementById('si-acf').style.display = 'none';
   document.getElementById('si-tp').classList.toggle('on', isP);
   document.getElementById('si-tpar').classList.toggle('on', isPar);
   document.getElementById('si-tc').classList.toggle('on', isC);
@@ -3046,6 +3074,33 @@ async function doCoachIn(){
   pSave(p); document.getElementById('si').style.display='none'; enterCoachMode(cn);
 }
 
+function doAsstCoachIn(){
+  var name = document.getElementById('si-acn').value.trim();
+  var email = document.getElementById('si-acem').value.trim();
+  var err = document.getElementById('si-acerr');
+  if(!name){ err.textContent='Enter your name'; return; }
+  if(!email || email.indexOf('@')<0){ err.textContent='Enter a valid email'; return; }
+  err.textContent='';
+  var p = {asstCoachName:name, asstCoachEmail:email, name:name, isAsstCoach:true};
+  pSave(p);
+  document.getElementById('si').style.display='none';
+  applyAsstCoach(p);
+}
+
+function applyAsstCoach(p){
+  // Same viewing privileges as parent — leaderboard, stats, no logging, no coach dashboard
+  document.getElementById('welcome-bar').style.display = 'flex';
+  document.getElementById('wname').textContent = 'Hi, '+p.asstCoachName;
+  document.getElementById('wemail').textContent = p.asstCoachEmail;
+  document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Asst Coach</span>';
+  document.getElementById('player-card').style.display = 'none';
+  // Hide log and coach nav — assistant coaches see stats and leaderboard only
+  document.getElementById('nav-log').style.display = 'none';
+  document.getElementById('nav-coach').style.display = 'none';
+  // Go to leaderboard by default
+  goPage('lb', document.getElementById('nav-lb'));
+}
+
 function applyPlayer(p){
   var sel = document.getElementById('player-select');
   var found = false;
@@ -3063,6 +3118,8 @@ function applyPlayer(p){
   document.getElementById('wemail').textContent = p.email;
   document.getElementById('wgrp-badge').innerHTML = p.group ? grpBadge(p.group) : '';
   document.getElementById('player-card').style.display = 'none';
+  // Hide coach tab — only head coach gets admin access
+  document.getElementById('nav-coach').style.display = 'none';
   // Default leaderboard to player's own group
   if(p.group){
     lbGroup = p.group;
@@ -3077,6 +3134,7 @@ function applyPlayer(p){
 function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
   document.getElementById('hdr-right').innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;padding:4px 10px;border:1px solid var(--gold-border);border-radius:6px;">Coach</div>';
+  document.getElementById('nav-coach').style.display = '';
   document.getElementById('nav-analytics').classList.add('show');
   goPage('coach', document.getElementById('nav-coach'));
 }
@@ -3558,6 +3616,7 @@ function renderAnalytics(){
       var page = t.acts;
       var parts = (t.group||'').split('|');
       var utype = parts[0] || 'player';
+      if(utype==='asstcoach') utype='parent'; // group assistant coach views with parents
       if(pageViews[page]) pageViews[page][utype] = (pageViews[page][utype]||0)+1;
       userTypeViews[utype] = (userTypeViews[utype]||0)+1;
       dailyViews[t.date] = (dailyViews[t.date]||0)+1;
@@ -3626,7 +3685,7 @@ function trackPageView(page){
   if(!page || page==='coach' || page==='analytics') return; // don't track coach-only pages
   var p = pLoad();
   if(!p || !p.name) return;
-  var userType = p.isCoach ? 'coach' : (p.isParent ? 'parent' : 'player');
+  var userType = p.isCoach ? 'coach' : (p.isAsstCoach ? 'asstcoach' : (p.isParent ? 'parent' : 'player'));
   var today = new Date().toISOString().slice(0,10);
   var key = page+'|'+p.name+'|'+today;
   if(_trackCache[key]) return; // max 1 per page per user per day
