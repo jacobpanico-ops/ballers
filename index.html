@@ -2091,7 +2091,8 @@ async function submitLog(){
   if(submitInFlight){ toast('Save in progress...'); return; }
   submitInFlight = true;
   dbg.log('submit', 'submitLog started');
-  var name = document.getElementById('player-select').value.trim();
+  var currentP = pLoad();
+  var name = coachModeOn ? document.getElementById('player-select').value.trim() : (currentP ? currentP.name : '');
   var date = document.getElementById('log-date').value;
   if(!name || name==='__other__'){ toast('Select a player first!'); submitInFlight=false; return; }
   if(!date){ toast('Pick a date!'); submitInFlight=false; return; }
@@ -2120,7 +2121,6 @@ async function submitLog(){
   }).join(', ');
   var btn = document.getElementById('log-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
-  var currentP = pLoad();
   var payload = [{name:name,date:date,acts:acts,pts:pts,makes:makes,group:(currentP&&currentP.group)||'',ts:Date.now()}];
 
   if(!navigator.onLine){
