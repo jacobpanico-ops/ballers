@@ -862,6 +862,8 @@ select.inp { cursor: pointer; }
 /* ═══ ANALYTICS PAGE ═══ */
 #nav-analytics { display: none; }
 #nav-analytics.show { display: flex; }
+#nav-coach { display: none; }
+#nav-coach.show { display: flex; }
 
 .an-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
 .an-kpi { background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 14px 12px; text-align: center; position: relative; overflow: hidden; }
@@ -1016,13 +1018,12 @@ select.inp { cursor: pointer; }
 
 <!-- STATS PAGE -->
 <div class="pg" id="pg-stats">
-  <div class="ph"><span class="ph-accent">My</span> Stats</div>
-  <div class="ps">Your off-season progress</div>
-  <div class="card">
-    <div class="ct">Look Up Player</div>
-    <select class="inp" id="stats-sel" onchange="renderStats()"><option value="">— Select a player —</option></select>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+    <button id="stats-back-btn" style="background:none;border:1px solid var(--gold-border);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--gold);font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">← Board</button>
+    <div class="ph" style="margin-bottom:0" id="stats-header"><span class="ph-accent">Player</span> Stats</div>
   </div>
-  <div id="stats-body"><div class="es"><div class="ei">🏀</div><p>Select your name above.</p></div></div>
+  <div class="ps" id="stats-sub">Tap a player on the leaderboard to view</div>
+  <div id="stats-body"><div class="es"><div class="ei">🏀</div><p>Tap a player on the leaderboard.</p></div></div>
 </div>
 
 <!-- LEADERBOARD PAGE -->
@@ -1062,9 +1063,6 @@ select.inp { cursor: pointer; }
   <button class="nb on" id="nav-log">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Log
   </button>
-  <button class="nb" id="nav-stats">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats
-  </button>
   <button class="nb" id="nav-lb">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>Board
   </button>
@@ -1093,7 +1091,7 @@ select.inp { cursor: pointer; }
     </div>
     <div id="sp-reward"></div>
     <div id="sp-badges"></div>
-    <button class="btn" style="max-width:280px;position:relative;z-index:1" id="splash-close-btn">View My Stats ▶</button>
+    <button class="btn" style="max-width:280px;position:relative;z-index:1" id="splash-close-btn">Nice Work! ▶</button>
     <div class="sp-quote" id="sp-quote">
       <div class="sp-quote-text" id="sp-quote-text"></div>
       <div class="sp-quote-attr" id="sp-quote-attr"></div>
@@ -1843,8 +1841,7 @@ window.addEventListener('load', function(){
       _rIC(function(){
         renderLb();
         if(coachOn) renderCoach();
-        var ss = document.getElementById('stats-sel').value.toLowerCase();
-        if(ss) renderStats();
+        if(_statsPlayer) renderStats();
       });
     }, 500);
   }
@@ -1903,8 +1900,8 @@ function hideLb(){ document.getElementById('loading-bar').style.display='none'; 
 function wireEvents(){
   // Nav
   document.getElementById('nav-log').addEventListener('click', function(){ goPage('log', this); });
-  document.getElementById('nav-stats').addEventListener('click', function(){ goPage('stats', this); });
   document.getElementById('nav-lb').addEventListener('click', function(){ goPage('lb', this); });
+  document.getElementById('stats-back-btn').addEventListener('click', function(){ goPage('lb', document.getElementById('nav-lb')); });
   document.getElementById('nav-coach').addEventListener('click', function(){ goPage('coach', this); });
   document.getElementById('nav-analytics').addEventListener('click', function(){ goPage('analytics', this); });
 
@@ -2007,18 +2004,16 @@ function buildRoster(){
   ROSTER.forEach(function(n){ loggedNames[n.toLowerCase()] = n; });
   var allNames = Object.values(loggedNames).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
 
-  ['player-select','stats-sel'].forEach(function(id){
+  ['player-select'].forEach(function(id){
     var el = document.getElementById(id);
     var prev = el.value; // preserve current selection
-    el.innerHTML = '<option value="">'+(id==='player-select'?'— Select your name —':'— Select a player —')+'</option>';
+    el.innerHTML = '<option value="">— Select your name —</option>';
     allNames.forEach(function(n){
       var o = document.createElement('option');
       o.value = n; o.textContent = n; el.appendChild(o);
     });
-    if(id==='player-select'){
-      var ot = document.createElement('option');
-      ot.value = '__other__'; ot.textContent = 'Other (type below)'; el.appendChild(ot);
-    }
+    var ot = document.createElement('option');
+    ot.value = '__other__'; ot.textContent = 'Other (type below)'; el.appendChild(ot);
     if(prev) el.value = prev; // restore selection
   });
 }
@@ -2237,11 +2232,12 @@ async function submitLog(){
 // ████████████████████████████████████████████████████████████████████████
 // §11 STATS PAGE — Player stats, badges, recent activity
 // ████████████████████████████████████████████████████████████████████████
+var _statsPlayer = '';
 function renderStats(){
   dbg.log('stats', 'renderStats called');
-  var name = document.getElementById('stats-sel').value.toLowerCase();
+  var name = _statsPlayer.toLowerCase();
   var body = document.getElementById('stats-body');
-  if(!name){ body.innerHTML='<div class="es"><div class="ei">🏀</div><p>Select a player above.</p></div>'; return; }
+  if(!name){ body.innerHTML='<div class="es"><div class="ei">🏀</div><p>Tap a player on the leaderboard.</p></div>'; return; }
   var pl = logs.filter(function(l){ return l.name.toLowerCase()===name; });
   if(!pl.length){ body.innerHTML='<div class="es"><div class="ei">😤</div><p>No logs yet. Get in the gym!</p></div>'; return; }
   var tp=pl.reduce(function(s,l){return s+l.pts;},0);
@@ -2526,14 +2522,13 @@ function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&qu
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function goStats(name){
-  var ss = document.getElementById('stats-sel');
-  var found = false;
-  for(var i=0;i<ss.options.length;i++){
-    if(ss.options[i].value.toLowerCase()===name.toLowerCase()){ ss.selectedIndex=i; found=true; break; }
-  }
-  if(!found){ var o=document.createElement('option'); o.value=name; o.textContent=name; o.selected=true; ss.appendChild(o); }
+  _statsPlayer = name;
+  var hdr = document.getElementById('stats-header');
+  if(hdr) hdr.innerHTML = '<span class="ph-accent">'+escapeHtml(name)+'</span>';
+  var sub = document.getElementById('stats-sub');
+  if(sub) sub.textContent = 'Off-season progress';
   renderStats();
-  goPage('stats', document.getElementById('nav-stats'));
+  goPage('stats', null);
 }
 
 var _aggCache = null, _aggCacheLen = -1;
@@ -2728,8 +2723,7 @@ async function saveEditLog(){
   var idx = logs.findIndex(function(l){ return l.id===id; });
   if(idx>=0) logs[idx] = Object.assign({},logs[idx],{name:name,date:date,acts:acts,pts:pts,makes:mk});
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
-  var ss = document.getElementById('stats-sel').value.toLowerCase();
-  if(ss) renderStats();
+  if(_statsPlayer) renderStats();
   toast('Entry updated ✅');
 }
 
@@ -2739,8 +2733,7 @@ async function deleteLog(id){
   if(res.error || res.data===false){ toast('Delete failed'+(res.data===false?' — bad PIN':'')); return; }
   logs = logs.filter(function(l){ return l.id!==id; });
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
-  var ss = document.getElementById('stats-sel').value.toLowerCase();
-  if(ss) renderStats();
+  if(_statsPlayer) renderStats();
   toast('Entry deleted');
 }
 
@@ -2938,7 +2931,7 @@ async function tryPin(){
   }
   else { p=''; toast('Wrong PIN!'); }
 }
-function lockCoach(){ coachOn=false; coachModeOn=false; coachPin=''; document.getElementById('nav-analytics').classList.remove('show'); setupDate(); renderCoach(); }
+function lockCoach(){ coachOn=false; coachModeOn=false; coachPin=''; document.getElementById('nav-analytics').classList.remove('show'); document.getElementById('nav-coach').classList.remove('show'); setupDate(); renderCoach(); }
 function toggleCoachMode(){ coachModeOn=!coachModeOn; setupDate(); renderCoach(); toast(coachModeOn?'Override ON — any date allowed':'Override OFF'); }
 
 async function resetData(){
@@ -3215,7 +3208,6 @@ function applyParent(p){
   document.getElementById('player-card').style.display = 'none';
   // Hide the log page nav — parents can only see stats and leaderboard
   document.getElementById('nav-log').style.display = 'none';
-  document.getElementById('nav-coach').style.display = 'none';
   // Lock leaderboard to player's group — hide filter buttons
   if(p.playerGroup){
     lbGroup = p.playerGroup;
@@ -3231,8 +3223,6 @@ function findPlayerByEmail(email){
   // Search aggregated player data — look for a player whose profile email matches
   // Since emails are stored per-player in their pSave, we can't directly query
   // Instead we show the leaderboard and let the parent tap on their child
-  // We also attempt to auto-navigate to stats if we find a name match
-  var el = document.getElementById('nav-stats');
   // Show a hint banner on leaderboard
   setTimeout(function(){
     var hint = document.createElement('div');
@@ -3281,9 +3271,8 @@ function applyAsstCoach(p){
   document.getElementById('wemail').textContent = p.asstCoachEmail;
   document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Asst Coach</span>';
   document.getElementById('player-card').style.display = 'none';
-  // Hide log and coach nav — assistant coaches see stats and leaderboard only
+  // Hide log nav — assistant coaches see leaderboard only
   document.getElementById('nav-log').style.display = 'none';
-  document.getElementById('nav-coach').style.display = 'none';
   // Show leaderboard group filter for assistant coaches
   document.getElementById('lb-group-filter').style.display = 'flex';
   // Go to leaderboard by default
@@ -3307,8 +3296,6 @@ function applyPlayer(p){
   document.getElementById('wemail').textContent = p.email;
   document.getElementById('wgrp-badge').innerHTML = p.group ? grpBadge(p.group) : '';
   document.getElementById('player-card').style.display = 'none';
-  // Hide coach tab — only head coach gets admin access
-  document.getElementById('nav-coach').style.display = 'none';
   // Lock leaderboard to player's own group — hide filter buttons
   if(p.group){
     lbGroup = p.group;
@@ -3337,7 +3324,7 @@ function enterCoachMode(name){
     }
   });
   document.getElementById('hdr-right').innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;padding:4px 10px;border:1px solid var(--gold-border);border-radius:6px;">Coach</div>';
-  document.getElementById('nav-coach').style.display = '';
+  document.getElementById('nav-coach').classList.add('show');
   document.getElementById('nav-analytics').classList.add('show');
   goPage('coach', document.getElementById('nav-coach'));
 }
@@ -3352,7 +3339,7 @@ function doSignOut(){
   document.getElementById('nav-analytics').classList.remove('show');
   // Restore nav buttons that may have been hidden for parent view
   document.getElementById('nav-log').style.display='';
-  document.getElementById('nav-coach').style.display='';
+  document.getElementById('nav-coach').classList.remove('show');
   document.getElementById('lb-group-filter').style.display='flex';
   lbGroup = 'hs';
   setupDate(); document.getElementById('si').style.display='flex';
@@ -3443,9 +3430,9 @@ function closeModal(id){ document.getElementById(id).classList.remove('on'); }
 function goPage(name, btn){
   dbg.log('nav', 'goPage → '+name);
   document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
-  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
+  if(btn) document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('pg-'+name).classList.add('on');
-  btn.classList.add('on');
+  if(btn) btn.classList.add('on');
   if(name==='lb') renderLb();
   if(name==='coach') renderCoach();
   if(name==='stats') renderStats();
