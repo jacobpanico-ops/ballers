@@ -628,6 +628,43 @@ select.inp { cursor: pointer; }
 .si-privacy.shake { animation: shake 0.4s ease-in-out; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
 
+/* ═══ PARENTAL CONSENT OVERLAY ═══ */
+#parental-consent-overlay {
+  position: fixed; inset: 0; background: rgba(2,2,2,0.96); z-index: 650;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+#parental-consent-overlay.on { display: flex; }
+.pc-box {
+  background: var(--surface); border: 1px solid var(--gold-border-strong);
+  border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 400px;
+  position: relative; overflow: hidden; animation: fadeUp 0.3s ease-out;
+}
+.pc-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ember2), var(--gold-bright), var(--ember2), transparent);
+  border-radius: 16px 16px 0 0; opacity: 0.8;
+}
+.pc-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; font-style: italic; text-transform: uppercase; color: var(--gold-bright); margin-bottom: 4px; letter-spacing: 1px; }
+.pc-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5; }
+.pc-privacy-scroll {
+  max-height: 180px; overflow-y: auto; padding: 14px; margin-bottom: 16px;
+  background: rgba(255,203,5,0.04); border: 1px solid var(--gold-border);
+  border-radius: 10px; font-size: 12px; color: #C8BFA8; line-height: 1.65;
+}
+.pc-privacy-scroll::-webkit-scrollbar { width: 4px; }
+.pc-privacy-scroll::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 4px; }
+.pc-check-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 14px 0;
+  padding: 12px 14px; background: rgba(255,203,5,0.06); border: 1px solid var(--gold-border);
+  border-radius: 10px;
+}
+.pc-check-row input[type="checkbox"] { flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--gold-bright); cursor: pointer; }
+.pc-check-row label { font-size: 13px; color: var(--text-dim); line-height: 1.5; cursor: pointer; font-weight: 500; }
+.pc-check-row.shake { animation: shake 0.4s ease-in-out; }
+.pc-err { color: var(--status-inactive); font-size: 12px; font-weight: 700; text-align: center; margin-top: 8px; min-height: 16px; }
+
 /* ═══ PRIVACY MODAL ═══ */
 .privacy-body { max-height: 55vh; overflow-y: auto; padding-right: 4px; }
 .privacy-body h3 { font-family: var(--font-display); font-size: 14px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin: 16px 0 6px; }
@@ -992,9 +1029,8 @@ select.inp { cursor: pointer; }
 <div class="pg" id="pg-lb">
   <div class="ph"><span class="ph-accent">Leader</span>board</div>
   <div class="ps" id="lb-ps">Off-season standings</div>
-  <div class="gf">
-    <button class="gft on" id="lbg-all">All</button>
-    <button class="gft" id="lbg-hs">High School</button>
+  <div class="gf" id="lb-group-filter">
+    <button class="gft on-hs" id="lbg-hs">High School</button>
     <button class="gft" id="lbg-jh">Junior High</button>
     <button class="gft" id="lbg-yth">Youth</button>
   </div>
@@ -1150,6 +1186,33 @@ select.inp { cursor: pointer; }
 
 <!-- PRIVACY MODAL -->
 
+<!-- PARENTAL CONSENT OVERLAY (13 and under) -->
+<div id="parental-consent-overlay">
+  <div class="pc-box">
+    <div class="pc-title">🔒 Parent / Guardian Consent</div>
+    <div class="pc-sub">Before <strong id="pc-player-name"></strong> can use the app, a parent or guardian must acknowledge the privacy statement below.</div>
+    <div class="pc-privacy-scroll">
+      <strong style="color:var(--gold);font-family:var(--font-display);font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Privacy Statement</strong><br><br>
+      Your child's name, email, group, and workout activity data are stored securely using Supabase (cloud-hosted database). This data is used solely for tracking off-season basketball participation within the Fairview Apaches program.<br><br>
+      <strong style="color:var(--gold);">Who can see this data:</strong> Coaching staff (full access) and teammates (leaderboard name &amp; points only). Your child's email address is never shown to other players.<br><br>
+      <strong style="color:var(--gold);">Data sharing:</strong> Data is never sold, shared with advertisers, or distributed outside the Fairview basketball program.<br><br>
+      <strong style="color:var(--gold);">Data retention:</strong> Activity data is retained for the current off-season only. To opt out or request data deletion at any time, contact the head coach.<br><br>
+      <strong style="color:var(--gold);">Contact:</strong> If you have questions about data practices, reach out to the Fairview Apaches coaching staff directly.
+    </div>
+    <div class="si-row" style="margin-bottom:10px">
+      <label class="si-lbl">Parent / Guardian Full Name</label>
+      <input class="si-inp" id="pc-parent-name" type="text" autocomplete="name" placeholder="Jane Johnson">
+    </div>
+    <div class="pc-check-row" id="pc-check-row">
+      <input type="checkbox" id="pc-agree">
+      <label for="pc-agree">I am the parent or legal guardian of this player. I have read the privacy statement above and give consent for my child to use Hoop N' Hustle.</label>
+    </div>
+    <button class="si-go-btn" id="pc-confirm-btn" style="margin-top:10px;">Confirm &amp; Continue 🏀</button>
+    <button class="btn btn-dim btn-sm" id="pc-back-btn" style="margin-top:8px;">← Back to Sign In</button>
+    <div class="pc-err" id="pc-err"></div>
+  </div>
+</div>
+
 <!-- AWARD BONUS MODAL -->
 <div class="modal" id="award-bonus-modal">
   <div class="modal-box">
@@ -1205,6 +1268,15 @@ select.inp { cursor: pointer; }
       <div class="si-desc">Enter your player's email to follow their progress. View-only — no logging or editing.</div>
       <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-parfn" type="text" autocomplete="given-name" autocorrect="off" placeholder="Jane Johnson"></div>
       <div class="si-row"><label class="si-lbl">Player's Email</label><input class="si-inp" id="si-parem" type="email" autocomplete="off" placeholder="marcus@email.com"></div>
+      <div class="si-row">
+        <label class="si-lbl">Player's Group</label>
+        <select class="si-inp" id="si-pargrp" style="font-size:15px;">
+          <option value="">— Select their group —</option>
+          <option value="hs">High School</option>
+          <option value="jh">Junior High</option>
+          <option value="yth">Youth</option>
+        </select>
+      </div>
       <div class="si-privacy" id="si-privacy-par" style="flex-direction:column;gap:6px;background:rgba(255,203,5,0.08);border:1px solid rgba(255,203,5,0.35);margin:20px 0 10px;">
         <div style="font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);">🔒 Privacy</div>
         <div style="font-size:12px;color:#C8BFA8;line-height:1.6;">Your child's name, email, and workout data are stored securely and only visible to coaching staff and teammates (leaderboard). Data is never sold or shared outside the Fairview basketball program. To opt out or delete data, contact the coach.</div>
@@ -1551,7 +1623,7 @@ function getNewBadges(name, ptsEarned){
   return afterBadges.filter(function(b){ return b.earned && !beforeSet[b.id]; });
 }
 
-var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'all';
+var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'hs';
 var coachOn = false, coachModeOn = false, coachPin = '', logs = [];
 var bonusEvent = null;
 var announcement = '';
@@ -1847,6 +1919,10 @@ function wireEvents(){
   document.getElementById('si-cgo').addEventListener('click', doCoachIn);
   document.getElementById('si-acgo').addEventListener('click', doAsstCoachIn);
 
+  // Parental consent buttons
+  document.getElementById('pc-confirm-btn').addEventListener('click', confirmParentalConsent);
+  document.getElementById('pc-back-btn').addEventListener('click', cancelParentalConsent);
+
   // Assistant coach toggle
   document.getElementById('si-ac-toggle').addEventListener('click', function(){
     document.getElementById('si-cf').style.display='none';
@@ -1876,7 +1952,6 @@ function wireEvents(){
   document.getElementById('lb-sess-btn').addEventListener('click', function(){ lbSwitch('sessions', this); });
 
   // Leaderboard group filters
-  document.getElementById('lbg-all').addEventListener('click', function(){ lbGroupSwitch('all', this); });
   document.getElementById('lbg-hs').addEventListener('click',  function(){ lbGroupSwitch('hs',  this); });
   document.getElementById('lbg-jh').addEventListener('click',  function(){ lbGroupSwitch('jh',  this); });
   document.getElementById('lbg-yth').addEventListener('click', function(){ lbGroupSwitch('yth', this); });
@@ -2265,15 +2340,14 @@ function lbSwitch(mode, el){
 function lbGroupSwitch(grp, el){
   lbGroup = grp;
   document.querySelectorAll('.gft').forEach(function(b){ b.className='gft'; });
-  if(grp==='all') el.classList.add('on');
-  else el.classList.add('on-'+grp);
+  el.classList.add('on-'+grp);
   renderLb();
 }
 
 function renderLb(){
   dbg.time('renderLb');
   var allPl = aggPlayers(logs);
-  var pl = (lbGroup==='all') ? allPl : allPl.filter(function(p){ return p.group===lbGroup; });
+  var pl = allPl.filter(function(p){ return p.group===lbGroup; });
   pl = pl.sort(function(a,b){
     if(lbMode==='pts') return b.pts-a.pts;
     if(lbMode==='makes') return b.makes-a.makes;
@@ -2281,12 +2355,11 @@ function renderLb(){
   });
   var subtitle = document.getElementById('lb-ps');
   if(subtitle){
-    if(lbGroup==='all') subtitle.textContent = 'Off-season standings — all groups';
-    else subtitle.textContent = 'Off-season standings — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup);
+    subtitle.textContent = 'Off-season standings — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup);
   }
   var body = document.getElementById('lb-body');
   if(!pl.length){
-    var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
+    var grpName = ' in '+grpLabel(lbGroup);
     body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
   }
   var currentP = pLoad();
@@ -2300,7 +2373,7 @@ function renderLb(){
   var oldLogs = logs.filter(function(l){ return l.date < sevenStr; });
   var oldRanks = {};
   if(oldLogs.length > 0){
-    var oldPl = (lbGroup==='all') ? aggPlayers(oldLogs) : aggPlayers(oldLogs).filter(function(p){ return p.group===lbGroup; });
+    var oldPl = aggPlayers(oldLogs).filter(function(p){ return p.group===lbGroup; });
     oldPl.sort(function(a,b){
       if(lbMode==='pts') return b.pts-a.pts;
       if(lbMode==='makes') return b.makes-a.makes;
@@ -2381,7 +2454,6 @@ function renderLb(){
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">'
           +'<span class="tb '+tier.k+'" style="font-size:9px;padding:2px 8px;margin:0">'+tier.l+'</span>'
           +titleBadgeHtml(p)
-          +(lbGroup==='all' && p.group ? grpBadge(p.group) : '')
         +'</div>'
       +'</div>'
       +'<div class="lbi"><div class="lbp">'+val+'</div><div class="lbm">'+sub+'</div></div>'
@@ -3004,18 +3076,71 @@ function doSignIn(){
   if(!em||em.indexOf('@')<0){ err.textContent='Enter a valid email'; return; }
   if(!grp){ err.textContent='Select your group'; return; }
   err.textContent='';
-  var p = {first:fn,last:ln,email:em,name:fn+' '+ln,group:grp,isCoach:false};
-  pSave(p); document.getElementById('si').style.display='none'; applyPlayer(p);
-  // Save profile to Supabase so coach can see email in directory
-  SB.rpc('upsert_profile', {full_name:fn+' '+ln, profile_date:new Date().toISOString().slice(0,10), grp_email:grp+'|'+em});
+
+  // All players require parental consent on first sign-in
+  _pendingPlayer = {first:fn, last:ln, email:em, name:fn+' '+ln, group:grp, isCoach:false};
+  showParentalConsent(_pendingPlayer);
+}
+
+// ── Parental consent flow ──
+var _pendingPlayer = null;
+function showParentalConsent(p){
+  document.getElementById('pc-player-name').textContent = p.name;
+  document.getElementById('pc-parent-name').value = '';
+  document.getElementById('pc-agree').checked = false;
+  document.getElementById('pc-err').textContent = '';
+  document.getElementById('parental-consent-overlay').classList.add('on');
+}
+
+function confirmParentalConsent(){
+  var parentName = document.getElementById('pc-parent-name').value.trim();
+  var agreed = document.getElementById('pc-agree').checked;
+  var err = document.getElementById('pc-err');
+  if(!parentName){ err.textContent='Enter parent/guardian name'; return; }
+  if(!agreed){
+    err.textContent='You must acknowledge the privacy statement';
+    document.getElementById('pc-check-row').classList.add('shake');
+    setTimeout(function(){ document.getElementById('pc-check-row').classList.remove('shake'); }, 500);
+    return;
+  }
+  err.textContent='';
+  if(!_pendingPlayer) return;
+
+  // Store consent in Supabase
+  var today = new Date().toISOString().slice(0,10);
+  SB.from('logs').insert([{
+    name: '__CONSENT__',
+    date: today,
+    acts: _pendingPlayer.name,
+    pts: 0, makes: 0,
+    group: parentName + '|' + _pendingPlayer.email + '|' + _pendingPlayer.group,
+    ts: Date.now()
+  }]);
+
+  // Complete the sign-in
+  var p = _pendingPlayer;
+  p.parentConsent = parentName;
+  pSave(p);
+  document.getElementById('parental-consent-overlay').classList.remove('on');
+  document.getElementById('si').style.display='none';
+  applyPlayer(p);
+  SB.rpc('upsert_profile', {full_name:p.name, profile_date:today, grp_email:p.group+'|'+p.email});
+  _pendingPlayer = null;
+}
+
+function cancelParentalConsent(){
+  document.getElementById('parental-consent-overlay').classList.remove('on');
+  _pendingPlayer = null;
 }
 
 function doParentIn(){
   var name = document.getElementById('si-parfn').value.trim();
   var playerEmail = document.getElementById('si-parem').value.trim();
+  var parGrp = document.getElementById('si-pargrp').value;
   var err = document.getElementById('si-parerr');
   if(!name){ err.textContent='Enter your name'; return; }
   if(!playerEmail || playerEmail.indexOf('@')<0){ err.textContent='Enter a valid player email'; return; }
+  if(!parGrp){ err.textContent='Select your player\'s group'; return; }
   err.textContent='';
   // Find which player has that email
   var matchedPlayer = null;
@@ -3024,7 +3149,7 @@ function doParentIn(){
   var playerEmail_lc = playerEmail.toLowerCase();
   // Try to find the player name from logs (players save their profile)
   // We save a parent profile and look up the player name when rendering
-  var p = {parentName:name, playerEmail:playerEmail_lc, isParent:true};
+  var p = {parentName:name, playerEmail:playerEmail_lc, playerGroup:parGrp, isParent:true};
   pSave(p);
   document.getElementById('si').style.display='none';
   applyParent(p);
@@ -3040,6 +3165,11 @@ function applyParent(p){
   // Hide the log page nav — parents can only see stats and leaderboard
   document.getElementById('nav-log').style.display = 'none';
   document.getElementById('nav-coach').style.display = 'none';
+  // Lock leaderboard to player's group — hide filter buttons
+  if(p.playerGroup){
+    lbGroup = p.playerGroup;
+  }
+  document.getElementById('lb-group-filter').style.display = 'none';
   // Go to leaderboard by default
   goPage('lb', document.getElementById('nav-lb'));
   // Set up stats to show the player's data — try to find by email
@@ -3103,6 +3233,8 @@ function applyAsstCoach(p){
   // Hide log and coach nav — assistant coaches see stats and leaderboard only
   document.getElementById('nav-log').style.display = 'none';
   document.getElementById('nav-coach').style.display = 'none';
+  // Show leaderboard group filter for assistant coaches
+  document.getElementById('lb-group-filter').style.display = 'flex';
   // Go to leaderboard by default
   goPage('lb', document.getElementById('nav-lb'));
 }
@@ -3126,19 +3258,20 @@ function applyPlayer(p){
   document.getElementById('player-card').style.display = 'none';
   // Hide coach tab — only head coach gets admin access
   document.getElementById('nav-coach').style.display = 'none';
-  // Default leaderboard to player's own group
+  // Lock leaderboard to player's own group — hide filter buttons
   if(p.group){
     lbGroup = p.group;
-    var activateBtn = document.getElementById('lbg-'+p.group);
-    if(activateBtn){
-      document.querySelectorAll('.gft').forEach(function(b){ b.className='gft'; });
-      activateBtn.classList.add('on-'+p.group);
-    }
+    document.getElementById('lb-group-filter').style.display = 'none';
   }
 }
 
 function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
+  // Show leaderboard group filter for coaches
+  document.getElementById('lb-group-filter').style.display = 'flex';
+  lbGroup = 'hs';
+  document.querySelectorAll('.gft').forEach(function(b){ b.className='gft'; });
+  document.getElementById('lbg-hs').classList.add('on-hs');
   // Auto-populate roster from Supabase player profiles
   fetchProfiles().then(function(profiles){
     if(profiles.length){
@@ -3169,6 +3302,8 @@ function doSignOut(){
   // Restore nav buttons that may have been hidden for parent view
   document.getElementById('nav-log').style.display='';
   document.getElementById('nav-coach').style.display='';
+  document.getElementById('lb-group-filter').style.display='flex';
+  lbGroup = 'hs';
   setupDate(); document.getElementById('si').style.display='flex';
 }
 
