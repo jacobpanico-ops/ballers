@@ -2675,7 +2675,8 @@ function openEditPlayer(name){
         +'<button class="del-btn" data-dellog="'+l.id+'">Del</button>'
         +'</div>';
     }).join('')
-    +'<div style="margin-top:16px"><button class="btn btn-dim btn-sm" id="close-edit-list-btn">Close</button></div>';
+    +'<div style="margin-top:16px;display:flex;gap:8px;"><button class="btn btn-dim btn-sm" style="flex:1" id="close-edit-list-btn">Close</button>'
+    +'<button class="btn btn-red btn-sm" style="flex:1;color:#F87171;border-color:rgba(248,113,113,0.4);" id="delete-all-player-btn">Delete Player</button></div>';
 
   box.querySelectorAll('[data-editlog]').forEach(function(btn){
     btn.addEventListener('click', function(){ openInlineEdit(this.dataset.editlog); });
@@ -2685,6 +2686,8 @@ function openEditPlayer(name){
   });
   var cl = box.querySelector('#close-edit-list-btn');
   if(cl) cl.addEventListener('click', function(){ closeModal('edit-modal'); });
+  var delAll = box.querySelector('#delete-all-player-btn');
+  if(delAll) delAll.addEventListener('click', function(){ deletePlayerAll(name); });
 
   openModal('edit-modal');
 }
@@ -2844,6 +2847,54 @@ function deletePlayer(name){
   if(!confirm('Remove "'+name+'" from the roster?\n\nLog data stays intact.')) return;
   ROSTER = ROSTER.filter(function(n){ return n.toLowerCase()!==name.toLowerCase(); });
   saveRoster(); buildRoster(); renderCoach(); toast(name+' removed');
+}
+
+async function deletePlayerAll(name){
+  if(!confirm('DELETE "'+name+'" and ALL their data?\n\nThis removes all activity logs, profile, and consent records from the database. This cannot be undone.')) return;
+  if(!confirm('Are you sure? This is permanent.\n\nType OK to confirm.')) return;
+
+  closeModal('edit-modal');
+  toast('Deleting '+name+'...');
+
+  var nameLc = name.toLowerCase();
+  var idsToDelete = [];
+
+  // 1. Gather activity log IDs from in-memory logs
+  logs.forEach(function(l){
+    if(l.name && l.name.toLowerCase() === nameLc) idsToDelete.push(l.id);
+  });
+
+  // 2. Query Supabase for __PROFILE__ rows (name='__PROFILE__', acts=playerName)
+  var profRes = await SB.from('logs').select('id').eq('name','__PROFILE__').ilike('acts', name);
+  if(profRes.data) profRes.data.forEach(function(r){ idsToDelete.push(r.id); });
+
+  // 3. Query Supabase for __CONSENT__ rows (name='__CONSENT__', acts=playerName)
+  var conRes = await SB.from('logs').select('id').eq('name','__CONSENT__').ilike('acts', name);
+  if(conRes.data) conRes.data.forEach(function(r){ idsToDelete.push(r.id); });
+
+  // 4. Query Supabase for __TRACK__ rows (name='__TRACK__', group contains playerName)
+  var trkRes = await SB.from('logs').select('id').eq('name','__TRACK__').ilike('group', '%|'+name);
+  if(trkRes.data) trkRes.data.forEach(function(r){ idsToDelete.push(r.id); });
+
+  // 5. Delete all gathered IDs via coach RPC
+  var deleted = 0, failed = 0;
+  for(var i = 0; i < idsToDelete.length; i++){
+    var res = await SB.rpc('coach_delete_log', {pin_attempt:coachPin, log_id:idsToDelete[i]});
+    if(res.error || res.data === false) failed++;
+    else deleted++;
+  }
+
+  // 6. Remove from local logs array and roster
+  logs = logs.filter(function(l){ return !l.name || l.name.toLowerCase() !== nameLc; });
+  invalidateAggCache(); cSave(logs);
+  ROSTER = ROSTER.filter(function(n){ return n.toLowerCase() !== nameLc; });
+  saveRoster();
+
+  // 7. Refresh UI
+  buildRoster(); renderCoach(); renderLb();
+  var msg = deleted + ' record'+(deleted!==1?'s':'')+' deleted';
+  if(failed > 0) msg += ' ('+failed+' failed)';
+  toast(name+' — '+msg);
 }
 
 // ████████████████████████████████████████████████████████████████████████
