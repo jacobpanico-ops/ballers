@@ -1191,8 +1191,8 @@ select.inp { cursor: pointer; }
     <div class="pc-sub">Before <strong id="pc-player-name"></strong> can use the app, a parent or guardian must acknowledge the privacy statement below.</div>
     <div class="pc-privacy-scroll">
       <strong style="color:var(--gold);font-family:var(--font-display);font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Privacy Statement</strong><br><br>
-      Your child's name, email, group, and workout activity data are stored securely using Supabase (cloud-hosted database). This data is used solely for tracking off-season basketball participation within the Fairview Apaches program.<br><br>
-      <strong style="color:var(--gold);">Who can see this data:</strong> Coaching staff (full access) and teammates (leaderboard name &amp; points only). Your child's email address is never shown to other players.<br><br>
+      Your child's name, group, and workout activity data are stored securely using Supabase (cloud-hosted database). This data is used solely for tracking off-season basketball participation within the Fairview Apaches program.<br><br>
+      <strong style="color:var(--gold);">Who can see this data:</strong> Coaching staff (full access) and teammates (leaderboard name &amp; points only).<br><br>
       <strong style="color:var(--gold);">Data sharing:</strong> Data is never sold, shared with advertisers, or distributed outside the Fairview basketball program.<br><br>
       <strong style="color:var(--gold);">Data retention:</strong> Activity data is retained for the current off-season only. To opt out or request data deletion at any time, contact the head coach.<br><br>
       <strong style="color:var(--gold);">Contact:</strong> If you have questions about data practices, reach out to the Fairview Apaches coaching staff directly.
@@ -1244,7 +1244,6 @@ select.inp { cursor: pointer; }
       <div class="si-desc">Set up once — the app remembers you every visit.</div>
       <div class="si-row"><label class="si-lbl">First Name</label><input class="si-inp" id="si-fn" type="text" autocomplete="given-name" autocorrect="off" placeholder="Marcus"></div>
       <div class="si-row"><label class="si-lbl">Last Name</label><input class="si-inp" id="si-ln" type="text" autocomplete="family-name" autocorrect="off" placeholder="Johnson"></div>
-      <div class="si-row"><label class="si-lbl">Email</label><input class="si-inp" id="si-em" type="email" autocomplete="email" placeholder="marcus@email.com"></div>
       <div class="si-row" style="margin-bottom:20px">
         <label class="si-lbl">My Group</label>
         <select class="si-inp" id="si-grp" style="font-size:15px;">
@@ -1256,16 +1255,17 @@ select.inp { cursor: pointer; }
       </div>
       <div class="si-privacy" id="si-privacy-p" style="flex-direction:column;gap:6px;background:rgba(255,203,5,0.08);border:1px solid rgba(255,203,5,0.35);margin:20px 0 10px;">
         <div style="font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);">🔒 Privacy</div>
-        <div style="font-size:12px;color:#C8BFA8;line-height:1.6;">Your name, email, and workout data are stored securely and only visible to your coaching staff and teammates (leaderboard). Your email is never shown to other players. Data is never sold or shared outside the Fairview basketball program. To opt out or delete your data, contact your coach.</div>
+        <div style="font-size:12px;color:#C8BFA8;line-height:1.6;">Your name and workout data are stored securely and only visible to your coaching staff and teammates (leaderboard). Data is never sold or shared outside the Fairview basketball program. To opt out or delete your data, contact your coach.</div>
       </div>
       <button class="si-go-btn" id="si-go">Let's Go 🏀</button>
       <div class="si-err" id="si-perr"></div>
     </div>
     <div class="si-form" id="si-parf" style="display:none">
       <div class="si-title">Parent View</div>
-      <div class="si-desc">Enter your player's email to follow their progress. View-only — no logging or editing.</div>
+      <div class="si-desc">Enter your player's name to follow their progress. View-only — no logging or editing.</div>
       <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-parfn" type="text" autocomplete="given-name" autocorrect="off" placeholder="Jane Johnson"></div>
-      <div class="si-row"><label class="si-lbl">Player's Email</label><input class="si-inp" id="si-parem" type="email" autocomplete="off" placeholder="marcus@email.com"></div>
+      <div class="si-row"><label class="si-lbl">Player's First Name</label><input class="si-inp" id="si-parfirst" type="text" autocomplete="off" placeholder="Marcus"></div>
+      <div class="si-row"><label class="si-lbl">Player's Last Name</label><input class="si-inp" id="si-parlast" type="text" autocomplete="off" placeholder="Johnson"></div>
       <div class="si-row">
         <label class="si-lbl">Player's Group</label>
         <select class="si-inp" id="si-pargrp" style="font-size:15px;">
@@ -1277,7 +1277,7 @@ select.inp { cursor: pointer; }
       </div>
       <div class="si-privacy" id="si-privacy-par" style="flex-direction:column;gap:6px;background:rgba(255,203,5,0.08);border:1px solid rgba(255,203,5,0.35);margin:20px 0 10px;">
         <div style="font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);">🔒 Privacy</div>
-        <div style="font-size:12px;color:#C8BFA8;line-height:1.6;">Your child's name, email, and workout data are stored securely and only visible to coaching staff and teammates (leaderboard). Data is never sold or shared outside the Fairview basketball program. To opt out or delete data, contact the coach.</div>
+        <div style="font-size:12px;color:#C8BFA8;line-height:1.6;">Your child's name and workout data are stored securely and only visible to coaching staff and teammates (leaderboard). Data is never sold or shared outside the Fairview basketball program. To opt out or delete data, contact the coach.</div>
       </div>
       <button class="si-go-btn" id="si-pargo">View My Player 🏀</button>
       <div class="si-err" id="si-parerr"></div>
@@ -1296,8 +1296,7 @@ select.inp { cursor: pointer; }
     <div class="si-form" id="si-acf" style="display:none">
       <div class="si-title">Assistant Coach</div>
       <div class="si-desc">View-only access — follow player progress, leaderboards, and stats. No PIN required.</div>
-      <div class="si-row"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-acn" type="text" autocomplete="name" autocorrect="off" placeholder="Coach Davis"></div>
-      <div class="si-row" style="margin-bottom:20px"><label class="si-lbl">Email</label><input class="si-inp" id="si-acem" type="email" autocomplete="email" placeholder="coach.davis@email.com"></div>
+      <div class="si-row" style="margin-bottom:20px"><label class="si-lbl">Your Name</label><input class="si-inp" id="si-acn" type="text" autocomplete="name" autocorrect="off" placeholder="Coach Davis"></div>
       <button class="si-go-btn" id="si-acgo">View Dashboard 📋</button>
       <div class="si-err" id="si-acerr"></div>
       <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--gold-border);">
@@ -1735,8 +1734,9 @@ async function syncOfflineQueue(){
   dbg.log('offline', 'Syncing '+q.length+' offline entries');
   var failed=[];
   for(var i=0;i<q.length;i++){
-    var res=await SB.from('logs').insert([q[i]]);
-    if(res.error) failed.push(q[i]);
+    var e = q[i];
+    var res = await SB.rpc('player_insert_log', {log_name:e.name, log_date:e.date, log_acts:e.acts, log_pts:e.pts, log_makes:e.makes, log_group:e.group||''});
+    if(res.error || res.data===false) failed.push(e);
   }
   if(failed.length){
     safeSave('hhc_offline_q',JSON.stringify(failed));
@@ -1987,10 +1987,10 @@ function wireEvents(){
   });
 
   // Enter key on sign-in
-  document.getElementById('si-em').addEventListener('keydown', function(e){ if(e.key==='Enter') doSignIn(); });
-  document.getElementById('si-parem').addEventListener('keydown', function(e){ if(e.key==='Enter') doParentIn(); });
+  document.getElementById('si-ln').addEventListener('keydown', function(e){ if(e.key==='Enter') doSignIn(); });
+  document.getElementById('si-parlast').addEventListener('keydown', function(e){ if(e.key==='Enter') doParentIn(); });
   document.getElementById('si-cp').addEventListener('keydown', function(e){ if(e.key==='Enter') doCoachIn(); });
-  document.getElementById('si-acem').addEventListener('keydown', function(e){ if(e.key==='Enter') doAsstCoachIn(); });
+  document.getElementById('si-acn').addEventListener('keydown', function(e){ if(e.key==='Enter') doAsstCoachIn(); });
 
   // Analytics refresh
   document.getElementById('an-refresh-btn').addEventListener('click', function(){
@@ -2025,8 +2025,10 @@ function buildRoster(){
 
 function onPlayerPick(){
   if(document.getElementById('player-select').value==='__other__'){
-    var n = prompt('Enter player name:');
+    var n = prompt('Enter player name (50 char max):');
     if(n && n.trim()){
+      var nameErr = validateName(n.trim());
+      if(nameErr){ toast(nameErr); document.getElementById('player-select').value=''; return; }
       var o = document.createElement('option');
       o.value = n.trim(); o.textContent = n.trim(); o.selected = true;
       var ps = document.getElementById('player-select');
@@ -2089,7 +2091,7 @@ function buildActs(){
     var isBonus = bonusEvent && bonusEvent.actId===a.id;
     var b = document.createElement('div');
     b.className = 'ab'+(isBonus?' bonus-active':''); b.id = 'ab-'+a.id;
-    var desc = isBonus ? (a.desc+' × '+bonusEvent.multiplier) : a.desc;
+    var desc = isBonus ? (a.desc+' × '+escapeHtml(String(bonusEvent.multiplier))) : a.desc;
     b.innerHTML = '<span class="an">'+a.name+'</span><span class="ap">'+desc+(isBonus?' ⚡':'')+'</span><span class="ack">✓</span>';
     b.addEventListener('click', function(){ toggleAct(a.id); });
     g.appendChild(b);
@@ -2099,7 +2101,7 @@ function buildActs(){
   if(bonusEvent){
     var bact = ACTS.find(function(a){ return a.id===bonusEvent.actId; });
     bd.style.display = 'block';
-    bd.innerHTML = '<div class="announce-banner"><div class="announce-icon">⚡</div><div class="announce-text"><div class="announce-title">Bonus Event Active</div><div class="announce-body"><strong style="color:var(--gold-bright)">'+escapeHtml(bonusEvent.label||'Bonus Week')+'</strong> — '+bonusEvent.multiplier+'× pts on '+(bact?escapeHtml(bact.name):'selected activity')+(bonusEvent.expires?' until '+fmtDate(bonusEvent.expires):'')+'</div></div></div>';
+    bd.innerHTML = '<div class="announce-banner"><div class="announce-icon">⚡</div><div class="announce-text"><div class="announce-title">Bonus Event Active</div><div class="announce-body"><strong style="color:var(--gold-bright)">'+escapeHtml(bonusEvent.label||'Bonus Week')+'</strong> — '+escapeHtml(String(bonusEvent.multiplier))+'× pts on '+(bact?escapeHtml(bact.name):'selected activity')+(bonusEvent.expires?' until '+fmtDate(bonusEvent.expires):'')+'</div></div></div>';
   } else { bd.style.display = 'none'; }
 }
 
@@ -2213,15 +2215,29 @@ async function submitLog(){
     submitInFlight=false; return;
   }
 
-  var res = await SB.from('logs').insert(payload);
-  if(res.error){
-    btn.textContent = 'Retrying...';
-    await new Promise(function(r){ setTimeout(r, 1800); });
-    res = await SB.from('logs').insert(payload);
+  var res;
+  if(coachModeOn){
+    // Coach override: use PIN-authenticated RPC (no caps enforced)
+    res = await SB.rpc('coach_insert_log', {pin_attempt:coachPin, log_name:name, log_date:date, log_acts:acts, log_pts:pts, log_makes:makes, log_group:(currentP&&currentP.group)||''});
+    if(res.error || res.data===false){
+      btn.textContent = 'Retrying...';
+      await new Promise(function(r){ setTimeout(r, 1800); });
+      res = await SB.rpc('coach_insert_log', {pin_attempt:coachPin, log_name:name, log_date:date, log_acts:acts, log_pts:pts, log_makes:makes, log_group:(currentP&&currentP.group)||''});
+    }
+    if(res.error || res.data===false){ btn.disabled=false; btn.textContent='Log It 🏀'; toast('Save failed — check connection'); submitInFlight=false; return; }
+  } else {
+    // Player: use server-validated RPC (caps enforced server-side)
+    res = await SB.rpc('player_insert_log', {log_name:name, log_date:date, log_acts:acts, log_pts:pts, log_makes:makes, log_group:(currentP&&currentP.group)||''});
+    if(res.error || res.data===false){
+      btn.textContent = 'Retrying...';
+      await new Promise(function(r){ setTimeout(r, 1800); });
+      res = await SB.rpc('player_insert_log', {log_name:name, log_date:date, log_acts:acts, log_pts:pts, log_makes:makes, log_group:(currentP&&currentP.group)||''});
+    }
+    if(res.error || res.data===false){ btn.disabled=false; btn.textContent='Log It 🏀'; toast('Save failed — check connection'); submitInFlight=false; return; }
   }
   btn.disabled = false; btn.textContent = 'Log It 🏀';
-  if(res.error){ toast('Save failed — check connection'); submitInFlight=false; return; }
-  logs.push(payload[0]); invalidateAggCache(); cSave(logs);
+  var localEntry = {name:name, date:date, acts:acts, pts:pts, makes:makes, group:(currentP&&currentP.group)||'', ts:Date.now()};
+  logs.push(localEntry); invalidateAggCache(); cSave(logs);
   actSel = {}; ctrs = {}; makes = 0;
   document.getElementById('makes-disp').textContent = '0';
   document.querySelectorAll('.ab').forEach(function(b){ b.classList.remove('on'); });
@@ -2314,7 +2330,7 @@ function renderStats(){
       }catch(e){console.error('Badge render error:',e);return '';}
     })()
     +'<div class="card"><div class="ct">Recent Activity</div>'
-    +rec.map(function(l){return'<div class="lr"><div class="ld">'+fmtDate(l.date)+'</div><div class="la">'+escapeHtml(l.acts)+'</div><div class="lp">+'+l.pts+'</div></div>';}).join('')
+    +rec.map(function(l){return'<div class="lr"><div class="ld">'+fmtDate(l.date)+'</div><div class="la">'+escapeHtml(l.acts)+'</div><div class="lp">+'+(parseInt(l.pts)||0)+'</div></div>';}).join('')
     +'</div>';
   setTimeout(function(){ var pf=document.getElementById('st-pf'); if(pf) pf.style.width=pct+'%'; }, 100);
   // Wire badge toggle
@@ -2526,6 +2542,17 @@ function renderLb(){
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+// §5c VALIDATION HELPERS
+function validateName(n){
+  if(!n || !n.trim()) return 'Enter a name';
+  n = n.trim();
+  if(n.length > 50) return 'Name too long (50 char max)';
+  if(n.substring(0,2)==='__') return 'Invalid name';
+  if(/[<>|"']/.test(n)) return 'Name contains invalid characters';
+  return '';
+}
+var VALID_MULTIPLIERS = [1.5, 2, 3];
+
 function goStats(name){
   _statsPlayer = name;
   var hdr = document.getElementById('stats-header');
@@ -2583,7 +2610,7 @@ function renderCoach(){
     bonusHtml += '<div class="bonus-badge">'
       +'<div><div class="bonus-name">'+escapeHtml(bonusEvent.label||'Bonus Event')+'</div>'
       +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'+(bact?bact.name:'')+(bonusEvent.expires?' · expires '+fmtDate(bonusEvent.expires):'')+'</div></div>'
-      +'<div class="bonus-multi">'+bonusEvent.multiplier+'×</div></div>'
+      +'<div class="bonus-multi">'+escapeHtml(String(bonusEvent.multiplier))+'×</div></div>'
       +'<button class="btn btn-red btn-sm" style="margin-top:10px" id="clear-bonus-btn">Remove Bonus</button>';
   } else {
     bonusHtml += '<div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">No active bonus event.</div>'
@@ -2601,13 +2628,13 @@ function renderCoach(){
         +'<div><div class="feed-name">'+escapeHtml(n)+'</div>'
         +(entry?'<div class="feed-act">'+escapeHtml(entry.acts)+'</div>':'<div class="feed-act" style="color:var(--text-muted)">Not logged today</div>')
         +'</div>'
-        +(entry?'<div class="feed-pts">+'+entry.pts+'</div>':'<div style="color:var(--text-muted);font-size:12px;">—</div>')
+        +(entry?'<div class="feed-pts">+'+(parseInt(entry.pts)||0)+'</div>':'<div style="color:var(--text-muted);font-size:12px;">—</div>')
         +'</div>';
     }).join('');
     var nonRoster = loggedToday.filter(function(l){ return !ROSTER.some(function(n){ return n.toLowerCase()===l.name.toLowerCase(); }); });
     if(nonRoster.length){
       feedHtml += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gold-border)"><div style="font-size:10px;letter-spacing:2px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Walk-Ins</div>';
-      nonRoster.forEach(function(l){ feedHtml += '<div class="feed-row"><div class="feed-dot"></div><div class="feed-name">'+escapeHtml(l.name)+'</div><div class="feed-pts">+'+l.pts+'</div></div>'; });
+      nonRoster.forEach(function(l){ feedHtml += '<div class="feed-row"><div class="feed-dot"></div><div class="feed-name">'+escapeHtml(l.name)+'</div><div class="feed-pts">+'+(parseInt(l.pts)||0)+'</div></div>'; });
       feedHtml += '</div>';
     }
   }
@@ -2670,9 +2697,9 @@ function openEditPlayer(name){
     +pLogs.map(function(l){
       return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gold-border)">'
         +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+fmtDate(l.date)+'</div><div style="font-size:11px;color:var(--text-muted)">'+escapeHtml(l.acts)+'</div></div>'
-        +'<div style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--gold-bright);font-style:italic;min-width:36px;text-align:right">'+l.pts+'</div>'
-        +'<button class="edit-btn" data-editlog="'+l.id+'">Edit</button>'
-        +'<button class="del-btn" data-dellog="'+l.id+'">Del</button>'
+        +'<div style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--gold-bright);font-style:italic;min-width:36px;text-align:right">'+(parseInt(l.pts)||0)+'</div>'
+        +'<button class="edit-btn" data-editlog="'+escapeAttr(String(l.id))+'">Edit</button>'
+        +'<button class="del-btn" data-dellog="'+escapeAttr(String(l.id))+'">Del</button>'
         +'</div>';
     }).join('')
     +'<div style="margin-top:16px;display:flex;gap:8px;"><button class="btn btn-dim btn-sm" style="flex:1" id="close-edit-list-btn">Close</button>'
@@ -2699,12 +2726,12 @@ function openInlineEdit(logId){
   var box = modal.querySelector('.modal-box');
   box.innerHTML = '<div class="modal-title">Edit Entry</div>'
     +'<div class="modal-sub">Adjust this log entry.</div>'
-    +'<input type="hidden" id="edit-log-id" value="'+logId+'">'
+    +'<input type="hidden" id="edit-log-id" value="'+escapeAttr(String(logId))+'">'
     +'<div class="modal-row"><label class="modal-lbl">Player Name</label><input class="inp" id="edit-name" type="text" value="'+escapeAttr(l.name)+'"></div>'
-    +'<div class="modal-row"><label class="modal-lbl">Date</label><input class="inp" id="edit-date" type="date" value="'+l.date+'"></div>'
+    +'<div class="modal-row"><label class="modal-lbl">Date</label><input class="inp" id="edit-date" type="date" value="'+escapeAttr(l.date)+'"></div>'
     +'<div class="modal-row"><label class="modal-lbl">Activities</label><input class="inp" id="edit-acts" type="text" value="'+escapeAttr(l.acts)+'"></div>'
-    +'<div class="modal-row"><label class="modal-lbl">Points (0–10)</label><input class="inp" id="edit-pts" type="number" min="0" max="10" value="'+l.pts+'"></div>'
-    +'<div class="modal-row"><label class="modal-lbl">Makes</label><input class="inp" id="edit-makes" type="number" min="0" value="'+l.makes+'"></div>'
+    +'<div class="modal-row"><label class="modal-lbl">Points (0–10)</label><input class="inp" id="edit-pts" type="number" min="0" max="10" value="'+(parseInt(l.pts)||0)+'"></div>'
+    +'<div class="modal-row"><label class="modal-lbl">Makes</label><input class="inp" id="edit-makes" type="number" min="0" value="'+(parseInt(l.makes)||0)+'"></div>'
     +'<div class="modal-btns">'
     +'<button class="btn btn-dim btn-sm" style="flex:1" id="inline-cancel-btn">Cancel</button>'
     +'<button class="btn btn-sm" style="flex:1" id="inline-save-btn">Save</button>'
@@ -2723,6 +2750,11 @@ async function saveEditLog(){
   var pts = parseInt(document.getElementById('edit-pts').value)||0;
   var mk = parseInt(document.getElementById('edit-makes').value)||0;
   if(!name||!date){ toast('Fill all fields'); return; }
+  var nameErr = validateName(name);
+  if(nameErr){ toast(nameErr); return; }
+  if(acts.length > 500){ acts = acts.substring(0, 500); }
+  pts = Math.max(0, Math.min(100, pts));
+  mk = Math.max(0, Math.min(5000, mk));
   var res = await SB.rpc('coach_update_log', {pin_attempt:coachPin, log_id:id, new_name:name, new_date:date, new_acts:acts, new_pts:pts, new_makes:mk});
   if(res.error || res.data===false){ toast('Update failed'+(res.data===false?' — bad PIN':'')); return; }
   var idx = logs.findIndex(function(l){ return l.id===id; });
@@ -2756,10 +2788,13 @@ var _BONUS_KEY = '__BONUS__';
 
 async function saveBonusEvent(){
   var actId = document.getElementById('bonus-act-sel').value;
-  var mult = document.getElementById('bonus-multi').value;
+  var mult = parseFloat(document.getElementById('bonus-multi').value);
   var label = document.getElementById('bonus-label').value.trim();
   var expires = document.getElementById('bonus-expires').value;
-  bonusEvent = {actId:actId, multiplier:parseFloat(mult), label:label, expires:expires};
+  if(!actId){ toast('Select an activity'); return; }
+  if(VALID_MULTIPLIERS.indexOf(mult) < 0){ toast('Invalid multiplier'); return; }
+  if(label.length > 100) label = label.substring(0, 100);
+  bonusEvent = {actId:actId, multiplier:mult, label:label, expires:expires};
   var btn = document.getElementById('bonus-save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   var res = await SB.rpc('coach_save_bonus', {pin_attempt:coachPin, bonus_json:JSON.stringify(bonusEvent)});
@@ -2795,6 +2830,7 @@ var _ANNOUNCE_KEY = '__ANNOUNCE__';
 async function saveAnnounce(){
   var txt = document.getElementById('announce-text').value.trim();
   if(!txt){ clearAnnounce(); return; }
+  if(txt.length > 500){ toast('Announcement too long (500 char max)'); return; }
   var btn = document.getElementById('announce-save-btn');
   btn.disabled = true; btn.textContent = 'Publishing...';
   var res = await SB.rpc('coach_save_announce', {pin_attempt:coachPin, msg:txt});
@@ -3117,17 +3153,17 @@ function doSignIn(){
   dbg.log('auth', 'doSignIn called');
   var fn = document.getElementById('si-fn').value.trim();
   var ln = document.getElementById('si-ln').value.trim();
-  var em = document.getElementById('si-em').value.trim();
   var grp = document.getElementById('si-grp').value;
   var err = document.getElementById('si-perr');
   if(!fn){ err.textContent='Enter your first name'; return; }
   if(!ln){ err.textContent='Enter your last name'; return; }
-  if(!em||em.indexOf('@')<0){ err.textContent='Enter a valid email'; return; }
+  var nameErr = validateName(fn+' '+ln);
+  if(nameErr){ err.textContent=nameErr; return; }
   if(!grp){ err.textContent='Select your group'; return; }
   err.textContent='';
 
   // All players require parental consent on first sign-in
-  _pendingPlayer = {first:fn, last:ln, email:em, name:fn+' '+ln, group:grp, isCoach:false};
+  _pendingPlayer = {first:fn, last:ln, name:fn+' '+ln, group:grp, isCoach:false};
   showParentalConsent(_pendingPlayer);
 }
 
@@ -3162,7 +3198,7 @@ function confirmParentalConsent(){
     date: today,
     acts: _pendingPlayer.name,
     pts: 0, makes: 0,
-    group: parentName + '|' + _pendingPlayer.email + '|' + _pendingPlayer.group,
+    group: parentName + '|' + _pendingPlayer.group,
     ts: Date.now()
   }]);
 
@@ -3173,7 +3209,7 @@ function confirmParentalConsent(){
   document.getElementById('parental-consent-overlay').classList.remove('on');
   document.getElementById('si').style.display='none';
   applyPlayer(p);
-  SB.rpc('upsert_profile', {full_name:p.name, profile_date:today, grp_email:p.group+'|'+p.email});
+  SB.rpc('upsert_profile', {full_name:p.name, profile_date:today, grp_email:p.group});
   _pendingPlayer = null;
 }
 
@@ -3184,21 +3220,17 @@ function cancelParentalConsent(){
 
 function doParentIn(){
   var name = document.getElementById('si-parfn').value.trim();
-  var playerEmail = document.getElementById('si-parem').value.trim();
+  var playerFirst = document.getElementById('si-parfirst').value.trim();
+  var playerLast = document.getElementById('si-parlast').value.trim();
   var parGrp = document.getElementById('si-pargrp').value;
   var err = document.getElementById('si-parerr');
   if(!name){ err.textContent='Enter your name'; return; }
-  if(!playerEmail || playerEmail.indexOf('@')<0){ err.textContent='Enter a valid player email'; return; }
+  if(!playerFirst){ err.textContent='Enter player\'s first name'; return; }
+  if(!playerLast){ err.textContent='Enter player\'s last name'; return; }
   if(!parGrp){ err.textContent='Select your player\'s group'; return; }
   err.textContent='';
-  // Find which player has that email
-  var matchedPlayer = null;
-  // Search logs for any player whose saved profile email matches
-  // We store this lookup by scanning known profiles in localStorage
-  var playerEmail_lc = playerEmail.toLowerCase();
-  // Try to find the player name from logs (players save their profile)
-  // We save a parent profile and look up the player name when rendering
-  var p = {parentName:name, playerEmail:playerEmail_lc, playerGroup:parGrp, isParent:true};
+  var playerName = playerFirst+' '+playerLast;
+  var p = {parentName:name, playerName:playerName, playerGroup:parGrp, isParent:true};
   pSave(p);
   document.getElementById('si').style.display='none';
   applyParent(p);
@@ -3208,7 +3240,7 @@ function applyParent(p){
   // Show a read-only view — navigate to leaderboard, hide log tab controls
   document.getElementById('welcome-bar').style.display = 'flex';
   document.getElementById('wname').textContent = 'Hi, '+p.parentName;
-  document.getElementById('wemail').textContent = 'Watching: '+p.playerEmail;
+  document.getElementById('wemail').textContent = 'Watching: '+p.playerName;
   document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Parent</span>';
   document.getElementById('player-card').style.display = 'none';
   // Hide the log page nav — parents can only see stats and leaderboard
@@ -3220,15 +3252,7 @@ function applyParent(p){
   document.getElementById('lb-group-filter').style.display = 'none';
   // Go to leaderboard by default
   goPage('lb', document.getElementById('nav-lb'));
-  // Set up stats to show the player's data — try to find by email
-  findPlayerByEmail(p.playerEmail);
-}
-
-function findPlayerByEmail(email){
-  // Search aggregated player data — look for a player whose profile email matches
-  // Since emails are stored per-player in their pSave, we can't directly query
-  // Instead we show the leaderboard and let the parent tap on their child
-  // Show a hint banner on leaderboard
+  // Show hint to tap player's name
   setTimeout(function(){
     var hint = document.createElement('div');
     hint.style.cssText = 'background:rgba(255,203,5,0.1);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);text-align:center;';
@@ -3252,18 +3276,16 @@ async function doCoachIn(){
   err.textContent='';
   // Scrub any query params from URL to prevent PIN leaking in history
   try{ history.replaceState({}, '', window.location.pathname); }catch(e){}
-  var p = {first:cn,last:'',email:'coach',name:cn,isCoach:true};
+  var p = {first:cn,last:'',name:cn,isCoach:true};
   pSave(p); document.getElementById('si').style.display='none'; enterCoachMode(cn);
 }
 
 function doAsstCoachIn(){
   var name = document.getElementById('si-acn').value.trim();
-  var email = document.getElementById('si-acem').value.trim();
   var err = document.getElementById('si-acerr');
   if(!name){ err.textContent='Enter your name'; return; }
-  if(!email || email.indexOf('@')<0){ err.textContent='Enter a valid email'; return; }
   err.textContent='';
-  var p = {asstCoachName:name, asstCoachEmail:email, name:name, isAsstCoach:true};
+  var p = {asstCoachName:name, name:name, isAsstCoach:true};
   pSave(p);
   document.getElementById('si').style.display='none';
   applyAsstCoach(p);
@@ -3273,7 +3295,7 @@ function applyAsstCoach(p){
   // Same viewing privileges as parent — leaderboard, stats, no logging, no coach dashboard
   document.getElementById('welcome-bar').style.display = 'flex';
   document.getElementById('wname').textContent = 'Hi, '+p.asstCoachName;
-  document.getElementById('wemail').textContent = p.asstCoachEmail;
+  document.getElementById('wemail').textContent = 'Assistant Coach';
   document.getElementById('wgrp-badge').innerHTML = '<span class="grp-badge grp-hs" style="background:rgba(255,203,5,0.15);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.35);">Asst Coach</span>';
   document.getElementById('player-card').style.display = 'none';
   // Hide log nav — assistant coaches see leaderboard only
@@ -3298,7 +3320,7 @@ function applyPlayer(p){
   sel.value = p.name;
   document.getElementById('welcome-bar').style.display = 'flex';
   document.getElementById('wname').textContent = 'Hey, '+p.first+' 🏀';
-  document.getElementById('wemail').textContent = p.email;
+  document.getElementById('wemail').textContent = p.group ? grpLabel(p.group) : '';
   document.getElementById('wgrp-badge').innerHTML = p.group ? grpBadge(p.group) : '';
   document.getElementById('player-card').style.display = 'none';
   // Lock leaderboard to player's own group — hide filter buttons
@@ -3400,19 +3422,17 @@ function submitShirtSize(){
   var award = window._pendingAward || {};
   var p = pLoad();
   var playerName = (p && p.name) ? p.name : (award.name || 'Unknown');
-  var playerEmail = (p && p.email) ? p.email : '';
-  sendAwardEmail(playerName, playerEmail, award.reward || 'Reward', award.emoji || '🎽', size);
+  sendAwardEmail(playerName, award.reward || 'Reward', award.emoji || '🎽', size);
   closeModal('shirt-size-modal');
   toast('Size submitted! Coach has been notified 📧');
   window._pendingAward = null;
 }
 
-function sendAwardEmail(playerName, playerEmail, rewardName, rewardEmoji, shirtSize){
+function sendAwardEmail(playerName, rewardName, rewardEmoji, shirtSize){
   var subject = encodeURIComponent(rewardEmoji + ' Award Earned: ' + rewardName + ' — ' + playerName);
   var body = encodeURIComponent(
     'A player just unlocked a reward!\n\n' +
     'Player: ' + playerName + '\n' +
-    'Player Email: ' + (playerEmail || 'not provided') + '\n' +
     'Award: ' + rewardName + '\n' +
     'Shirt Size: ' + shirtSize + '\n' +
     'Date: ' + new Date().toLocaleDateString() + '\n\n' +
@@ -3934,13 +3954,13 @@ async function fetchProfiles(){
     if(seen[name.toLowerCase()]) return;
     seen[name.toLowerCase()]=true;
     var parts=(row.group||'').split('|');
-    profiles.push({name:name, group:parts[0]||'', email:parts[1]||''});
+    profiles.push({name:name, group:parts[0]||''});
   });
   // Also include any player who has logged activity but has no __PROFILE__ row
   logs.forEach(function(l){
     if(!l.name || seen[l.name.toLowerCase()]) return;
     seen[l.name.toLowerCase()] = true;
-    profiles.push({name:l.name, group:l.group||'', email:''});
+    profiles.push({name:l.name, group:l.group||''});
   });
   return profiles.sort(function(a,b){ return a.name.localeCompare(b.name); });
 }
@@ -3956,8 +3976,7 @@ function renderDirectory(container){
       var gc=p.group==='hs'?'grp-hs':p.group==='jh'?'grp-jh':p.group==='yth'?'grp-yth':'';
       var gl=p.group==='hs'?'HS':p.group==='jh'?'JH':p.group==='yth'?'YTH':'—';
       return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,203,5,0.06);cursor:pointer;" data-editname="'+escapeAttr(p.name)+'">'
-        +'<div style="flex:1;"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;">'+escapeHtml(p.name)+'</div>'
-        +'<div style="font-size:12px;color:var(--text-dim);margin-top:2px;">'+escapeHtml(p.email)+'</div></div>'
+        +'<div style="flex:1;"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;">'+escapeHtml(p.name)+'</div></div>'
         +'<span class="grp-badge '+gc+'">'+gl+'</span>'
         +'<span style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;">EDIT</span>'
         +'</div>';
