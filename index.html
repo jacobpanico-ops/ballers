@@ -738,6 +738,7 @@ select.inp { cursor: pointer; }
 .gf { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
 .gft { flex: 1; min-width: 60px; padding: 9px 6px; background: var(--surface); border: 1px solid var(--gold-border); border-radius: 8px; font-family: var(--font-display); font-size: 12px; font-weight: 700; font-style: italic; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; text-align: center; transition: all 0.2s; }
 .gft.on     { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); border-color: var(--gold-bright); }
+.gft.on-all { background: linear-gradient(135deg, var(--gold-bright), var(--ember2)); color: var(--black); border-color: var(--gold-bright); }
 .gft.on-hs  { background: rgba(255,203,5,0.2);   color: var(--gold-bright); border-color: rgba(255,203,5,0.5); }
 .gft.on-jh  { background: rgba(200,200,200,0.15); color: #C8C8C8;           border-color: rgba(200,200,200,0.4); }
 .gft.on-yth { background: rgba(160,160,160,0.15); color: #AAAAAA;           border-color: rgba(160,160,160,0.4); }
@@ -1031,7 +1032,8 @@ select.inp { cursor: pointer; }
   <div class="ph"><span class="ph-accent">Leader</span>board</div>
   <div class="ps" id="lb-ps">Off-season standings</div>
   <div class="gf" id="lb-group-filter">
-    <button class="gft on-hs" id="lbg-hs">High School</button>
+    <button class="gft on-all" id="lbg-all">All</button>
+    <button class="gft" id="lbg-hs">High School</button>
     <button class="gft" id="lbg-jh">Junior High</button>
     <button class="gft" id="lbg-yth">Youth</button>
   </div>
@@ -1620,7 +1622,7 @@ function getNewBadges(name, ptsEarned){
   return afterBadges.filter(function(b){ return b.earned && !beforeSet[b.id]; });
 }
 
-var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'hs';
+var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'all';
 var coachOn = false, coachModeOn = false, coachPin = '', logs = [];
 var bonusEvent = null;
 var announcement = '';
@@ -1954,6 +1956,7 @@ function wireEvents(){
   document.getElementById('lb-sess-btn').addEventListener('click', function(){ lbSwitch('sessions', this); });
 
   // Leaderboard group filters
+  document.getElementById('lbg-all').addEventListener('click', function(){ lbGroupSwitch('all', this); });
   document.getElementById('lbg-hs').addEventListener('click',  function(){ lbGroupSwitch('hs',  this); });
   document.getElementById('lbg-jh').addEventListener('click',  function(){ lbGroupSwitch('jh',  this); });
   document.getElementById('lbg-yth').addEventListener('click', function(){ lbGroupSwitch('yth', this); });
@@ -2364,7 +2367,7 @@ function lbGroupSwitch(grp, el){
 function renderLb(){
   dbg.time('renderLb');
   var allPl = aggPlayers(logs);
-  var pl = allPl.filter(function(p){ return p.group===lbGroup; });
+  var pl = lbGroup==='all' ? allPl : allPl.filter(function(p){ return p.group===lbGroup; });
   pl = pl.sort(function(a,b){
     if(lbMode==='pts') return b.pts-a.pts;
     if(lbMode==='makes') return b.makes-a.makes;
@@ -2372,11 +2375,11 @@ function renderLb(){
   });
   var subtitle = document.getElementById('lb-ps');
   if(subtitle){
-    subtitle.textContent = 'Off-season standings — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup);
+    subtitle.textContent = 'Off-season standings' + (lbGroup==='all' ? '' : ' — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup));
   }
   var body = document.getElementById('lb-body');
   if(!pl.length){
-    var grpName = ' in '+grpLabel(lbGroup);
+    var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
     body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
   }
   var currentP = pLoad();
@@ -2390,7 +2393,8 @@ function renderLb(){
   var oldLogs = logs.filter(function(l){ return l.date < sevenStr; });
   var oldRanks = {};
   if(oldLogs.length > 0){
-    var oldPl = aggPlayers(oldLogs).filter(function(p){ return p.group===lbGroup; });
+    var oldPl = aggPlayers(oldLogs);
+    if(lbGroup!=='all') oldPl = oldPl.filter(function(p){ return p.group===lbGroup; });
     oldPl.sort(function(a,b){
       if(lbMode==='pts') return b.pts-a.pts;
       if(lbMode==='makes') return b.makes-a.makes;
@@ -2691,8 +2695,22 @@ function openEditPlayer(name){
   var pLogs = [].concat(logs.filter(function(l){ return l.name.toLowerCase()===name.toLowerCase(); })).sort(function(a,b){ return b.ts-a.ts; });
   var modal = document.getElementById('edit-modal');
   var box = modal.querySelector('.modal-box');
-  box.innerHTML = '<div class="modal-title">'+escapeHtml(name)+'\'s Logs</div>'
-    +'<div class="modal-sub">Edit or delete individual entries.</div>'
+  // Resolve current group
+  var curGroup = '';
+  var pAgg = aggPlayers(logs).find(function(p){ return p.name.toLowerCase()===name.toLowerCase(); });
+  if(pAgg) curGroup = pAgg.group || '';
+
+  box.innerHTML = '<div class="modal-title">'+escapeHtml(name)+'</div>'
+    +'<div class="modal-sub">Edit player group or individual entries.</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gold-border);margin-bottom:8px;">'
+    +'<label style="font-family:var(--font-display);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">Group</label>'
+    +'<select class="inp" id="edit-player-group" style="flex:1;padding:8px 10px;font-size:14px;">'
+    +'<option value="hs"'+(curGroup==='hs'?' selected':'')+'>High School</option>'
+    +'<option value="jh"'+(curGroup==='jh'?' selected':'')+'>Junior High</option>'
+    +'<option value="yth"'+(curGroup==='yth'?' selected':'')+'>Youth</option>'
+    +'</select>'
+    +'<button class="btn btn-sm" id="save-player-group-btn" style="min-width:70px;">Save</button>'
+    +'</div>'
     +(pLogs.length===0?'<div style="color:var(--text-muted);text-align:center;padding:20px;">No logs found.</div>':'')
     +pLogs.map(function(l){
       return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gold-border)">'
@@ -2715,8 +2733,28 @@ function openEditPlayer(name){
   if(cl) cl.addEventListener('click', function(){ closeModal('edit-modal'); });
   var delAll = box.querySelector('#delete-all-player-btn');
   if(delAll) delAll.addEventListener('click', function(){ deletePlayerAll(name); });
+  var grpBtn = box.querySelector('#save-player-group-btn');
+  if(grpBtn) grpBtn.addEventListener('click', function(){ changePlayerGroup(name, box.querySelector('#edit-player-group').value); });
 
   openModal('edit-modal');
+}
+
+async function changePlayerGroup(name, newGroup){
+  if(!newGroup){ toast('Select a group'); return; }
+  // 1. Update all activity logs for this player
+  var res = await SB.from('logs').update({group:newGroup}).eq('name',name).neq('name','__PROFILE__').neq('name','__CONSENT__');
+  if(res.error){ toast('Failed to update logs'); return; }
+  // 2. Update the __PROFILE__ row's group field
+  var profRes = await SB.from('logs').select('id,group').eq('name','__PROFILE__').ilike('acts',name);
+  if(profRes.data && profRes.data.length){
+    var oldGrp = profRes.data[0].group || '';
+    var parts = oldGrp.split('|'); parts[0] = newGroup;
+    await SB.from('logs').update({group:parts.join('|')}).eq('id',profRes.data[0].id);
+  }
+  // 3. Update local logs
+  logs.forEach(function(l){ if(l.name.toLowerCase()===name.toLowerCase()) l.group=newGroup; });
+  invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
+  toast(name+' moved to '+grpLabel(newGroup)+' ✅');
 }
 
 function openInlineEdit(logId){
@@ -3334,9 +3372,9 @@ function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
   // Show leaderboard group filter for coaches
   document.getElementById('lb-group-filter').style.display = 'flex';
-  lbGroup = 'hs';
+  lbGroup = 'all';
   document.querySelectorAll('.gft').forEach(function(b){ b.className='gft'; });
-  document.getElementById('lbg-hs').classList.add('on-hs');
+  document.getElementById('lbg-all').classList.add('on-all');
   // Auto-populate roster from Supabase player profiles
   fetchProfiles().then(function(profiles){
     if(profiles.length){
@@ -3368,7 +3406,7 @@ function doSignOut(){
   document.getElementById('nav-log').style.display='';
   document.getElementById('nav-coach').classList.remove('show');
   document.getElementById('lb-group-filter').style.display='flex';
-  lbGroup = 'hs';
+  lbGroup = 'all';
   setupDate(); document.getElementById('si').style.display='flex';
 }
 
