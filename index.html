@@ -1362,7 +1362,7 @@ var SB = supabase.createClient(
 );
 // PIN is now verified server-side via Supabase RPC — never stored in client code
 // App version — bump this on each deploy to force client refresh
-var APP_VERSION = '5.3.0';
+var APP_VERSION = '5.4.1';
 async function verifyPin(attempt){
   var res = await SB.rpc('verify_coach_pin', { pin_attempt: attempt });
   if(res.error) return false;
@@ -2384,65 +2384,23 @@ function lbGroupSwitch(grp, el){
 function renderLb(){
   dbg.time('renderLb');
   var allPl = aggPlayers(logs);
-  var pl = lbGroup==='all' ? allPl : allPl.filter(function(p){ return p.group===lbGroup; });
-  pl = pl.sort(function(a,b){
-    if(lbMode==='pts') return b.pts-a.pts;
-    if(lbMode==='makes') return b.makes-a.makes;
-    return b.sessions-a.sessions;
-  });
-  var subtitle = document.getElementById('lb-ps');
-  if(subtitle){
-    subtitle.textContent = 'Off-season standings' + (lbGroup==='all' ? '' : ' — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup));
-  }
   var body = document.getElementById('lb-body');
-  if(!pl.length){
-    var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
-    body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
-  }
   var currentP = pLoad();
-  var me = (currentP && !currentP.isCoach && !currentP.isParent) ? currentP.name.toLowerCase() : null;
-  var meIdx = -1;
-  if(me) pl.forEach(function(p,i){ if(p.name.toLowerCase()===me) meIdx=i; });
+  var me = (currentP && !currentP.isCoach && !currentP.isParent && !currentP.isAsstCoach) ? currentP.name.toLowerCase() : null;
+  var playerGroup = (currentP && !currentP.isCoach && !currentP.isAsstCoach && !currentP.isParent && currentP.group) ? currentP.group : null;
 
-  // ── Calculate 7-day-ago ranks for movement indicators ──
-  var sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate()-7);
-  var sevenStr = sevenAgo.toISOString().slice(0,10);
-  var oldLogs = logs.filter(function(l){ return l.date < sevenStr; });
-  var oldRanks = {};
-  if(oldLogs.length > 0){
-    var oldPl = aggPlayers(oldLogs);
-    if(lbGroup!=='all') oldPl = oldPl.filter(function(p){ return p.group===lbGroup; });
-    oldPl.sort(function(a,b){
-      if(lbMode==='pts') return b.pts-a.pts;
-      if(lbMode==='makes') return b.makes-a.makes;
-      return b.sessions-a.sessions;
-    });
-    oldPl.forEach(function(p,i){ oldRanks[p.name.toLowerCase()] = i; });
-  }
-
-  function moveIndicator(p, currentIdx){
-    var key = p.name.toLowerCase();
-    if(!(key in oldRanks)) return '<span class="lb-move lb-move-new">NEW</span>';
-    var oldIdx = oldRanks[key];
-    var diff = oldIdx - currentIdx; // positive = moved up
-    if(diff > 0) return '<span class="lb-move lb-move-up">▲'+diff+'</span>';
-    if(diff < 0) return '<span class="lb-move lb-move-down">▼'+Math.abs(diff)+'</span>';
-    return '';
-  }
-
-  // ── Calculate current streaks for 🔥 indicator ──
+  // ── Shared helpers (computed once for all players) ──
   var streakMap = {};
-  pl.forEach(function(p){
+  allPl.forEach(function(p){
     var dates = {};
     logs.forEach(function(l){ if(l.name.toLowerCase()===p.name.toLowerCase() && l.date) dates[l.date]=true; });
-    var sorted = Object.keys(dates).sort().reverse(); // newest first
+    var sorted = Object.keys(dates).sort().reverse();
     var streak = 0;
     if(sorted.length){
       var d = new Date(sorted[0]+'T12:00:00');
       var today = new Date(); today.setHours(12,0,0,0);
       var diffDays = Math.round((today-d)/(86400000));
-      if(diffDays > 1){ streak = 0; } // last log was more than 1 day ago
-      else {
+      if(diffDays <= 1){
         streak = 1;
         for(var si=1; si<sorted.length; si++){
           var prev = new Date(sorted[si-1]+'T12:00:00');
@@ -2463,7 +2421,6 @@ function renderLb(){
       '</span>';
   }
 
-  // ── Calculate unique days logged per player for titles ──
   var daysMap = {};
   logs.forEach(function(l){
     var k = l.name.toLowerCase();
@@ -2478,13 +2435,46 @@ function renderLb(){
     return '<span class="player-title title-'+t.days+'">'+t.icon+' '+escapeHtml(t.title)+'</span>';
   }
 
-  function buildRow(p, i){
+  function sortPlayers(arr){
+    return arr.sort(function(a,b){
+      if(lbMode==='pts') return b.pts-a.pts;
+      if(lbMode==='makes') return b.makes-a.makes;
+      return b.sessions-a.sessions;
+    });
+  }
+
+  var sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate()-7);
+  var sevenStr = sevenAgo.toISOString().slice(0,10);
+  var oldLogs = logs.filter(function(l){ return l.date < sevenStr; });
+
+  function computeOldRanks(filterGroup){
+    var ranks = {};
+    if(oldLogs.length > 0){
+      var oldPl = aggPlayers(oldLogs);
+      if(filterGroup) oldPl = oldPl.filter(function(p){ return p.group===filterGroup; });
+      sortPlayers(oldPl);
+      oldPl.forEach(function(p,i){ ranks[p.name.toLowerCase()] = i; });
+    }
+    return ranks;
+  }
+
+  function buildRow(p, i, oldRanks, showGroup){
+    function moveIndicator(p, currentIdx){
+      var key = p.name.toLowerCase();
+      if(!(key in oldRanks)) return '<span class="lb-move lb-move-new">NEW</span>';
+      var oldIdx = oldRanks[key];
+      var diff = oldIdx - currentIdx;
+      if(diff > 0) return '<span class="lb-move lb-move-up">▲'+diff+'</span>';
+      if(diff < 0) return '<span class="lb-move lb-move-down">▼'+Math.abs(diff)+'</span>';
+      return '';
+    }
     var isMe = me && p.name.toLowerCase()===me;
     var rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
     var rl = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
     var tier = getTier(p.pts);
     var val = lbMode==='pts' ? p.pts+' pts' : lbMode==='makes' ? p.makes+' makes' : p.sessions+' days';
     var sub = lbMode==='pts' ? p.makes+' makes' : p.pts+' pts';
+    var grpTag = showGroup ? ' '+grpBadge(p.group) : '';
     return '<div class="lbrow '+(isMe?'lbrow-me ':'')+rc+'" data-pname="'+escapeAttr(p.name)+'">'
       +'<div class="lbr">'+rl+'</div>'
       +'<div style="flex:1;padding:0 10px">'
@@ -2492,19 +2482,132 @@ function renderLb(){
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">'
           +'<span class="tb '+tier.k+'" style="font-size:9px;padding:2px 8px;margin:0">'+tier.l+'</span>'
           +titleBadgeHtml(p)
+          +grpTag
         +'</div>'
       +'</div>'
       +'<div class="lbi"><div class="lbp">'+val+'</div><div class="lbm">'+sub+'</div></div>'
       +'</div>';
   }
 
-  // ── Neighborhood View: Top 5 + ellipsis + (above, YOU, below) ──
+  function buildJumpers(pl, oldRanks){
+    if(oldLogs.length === 0 || pl.length <= 2) return '';
+    var jumpers = pl.map(function(p,i){
+      var key = p.name.toLowerCase();
+      if(!(key in oldRanks)) return null;
+      var diff = oldRanks[key] - i;
+      return diff > 0 ? { name:p.name, from:oldRanks[key]+1, to:i+1, delta:diff } : null;
+    }).filter(Boolean).sort(function(a,b){ return b.delta - a.delta; }).slice(0,3);
+    if(!jumpers.length) return '';
+    var h = '<div class="lb-jumpers"><div class="lb-jumpers-title">🚀 Weekly Jumpers</div>';
+    jumpers.forEach(function(j,i){
+      h += '<div class="lb-jumper-row">'
+        +'<div class="lb-jumper-rank">'+(i+1)+'</div>'
+        +'<div class="lb-jumper-name">'+escapeHtml(j.name)+'</div>'
+        +'<div class="lb-jumper-delta">▲'+j.delta+'</div>'
+        +'</div>';
+    });
+    return h + '</div>';
+  }
+
+  var subtitle = document.getElementById('lb-ps');
+
+  // ══ DUAL BOARD VIEW — for players with a group ══
+  if(playerGroup){
+    if(subtitle) subtitle.textContent = 'Off-season standings';
+    var html = '';
+
+    // ── SECTION 1: Overall Top 10 ──
+    var allSorted = sortPlayers([].concat(allPl));
+    var allOldRanks = computeOldRanks(null);
+    var meAllIdx = -1;
+    if(me) allSorted.forEach(function(p,i){ if(p.name.toLowerCase()===me) meAllIdx=i; });
+
+    html += '<div class="sec-div"><span>🏆 Overall Top 10</span></div>';
+    if(!allSorted.length){
+      html += '<div class="es"><div class="ei">🏆</div><p>No logs yet. Be first!</p></div>';
+    } else {
+      var ALL_TOP = 10;
+      var allVisibleIdxs = {};
+      for(var ai=0; ai<Math.min(ALL_TOP, allSorted.length); ai++) allVisibleIdxs[ai] = true;
+      if(meAllIdx >= 0){
+        if(meAllIdx > 0) allVisibleIdxs[meAllIdx-1] = true;
+        allVisibleIdxs[meAllIdx] = true;
+        if(meAllIdx < allSorted.length-1) allVisibleIdxs[meAllIdx+1] = true;
+      }
+      var allIdxList = Object.keys(allVisibleIdxs).map(Number).sort(function(a,b){return a-b;});
+      var prevIdx = -1;
+      allIdxList.forEach(function(idx){
+        if(prevIdx >= 0 && idx > prevIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
+        html += buildRow(allSorted[idx], idx, allOldRanks, true);
+        prevIdx = idx;
+      });
+      if(allSorted.length > ALL_TOP){
+        html += '<div class="lb-total-count">'+allSorted.length+' players total</div>';
+      }
+    }
+
+    // ── SECTION 2: Group Leaderboard ──
+    var grpPl = sortPlayers(allPl.filter(function(p){ return p.group===playerGroup; }));
+    var grpOldRanks = computeOldRanks(playerGroup);
+    var meGrpIdx = -1;
+    if(me) grpPl.forEach(function(p,i){ if(p.name.toLowerCase()===me) meGrpIdx=i; });
+
+    html += '<div class="sec-div"><span>'+grpLabel(playerGroup)+' Board</span></div>';
+    if(!grpPl.length){
+      html += '<div class="es"><div class="ei">🏆</div><p>No '+grpLabel(playerGroup)+' logs yet. Be first!</p></div>';
+    } else {
+      var GRP_TOP = 5;
+      var grpVisibleIdxs = {};
+      for(var gi=0; gi<Math.min(GRP_TOP, grpPl.length); gi++) grpVisibleIdxs[gi] = true;
+      if(meGrpIdx >= 0){
+        if(meGrpIdx > 0) grpVisibleIdxs[meGrpIdx-1] = true;
+        grpVisibleIdxs[meGrpIdx] = true;
+        if(meGrpIdx < grpPl.length-1) grpVisibleIdxs[meGrpIdx+1] = true;
+      }
+      var grpIdxList = Object.keys(grpVisibleIdxs).map(Number).sort(function(a,b){return a-b;});
+      var prevGrpIdx = -1;
+      grpIdxList.forEach(function(idx){
+        if(prevGrpIdx >= 0 && idx > prevGrpIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
+        html += buildRow(grpPl[idx], idx, grpOldRanks, false);
+        prevGrpIdx = idx;
+      });
+      if(grpPl.length > GRP_TOP){
+        html += '<div class="lb-total-count">'+grpPl.length+' '+grpLabel(playerGroup)+' players</div>';
+      }
+      html += buildJumpers(grpPl, grpOldRanks);
+    }
+
+    body.innerHTML = html;
+    body.querySelectorAll('.lbrow').forEach(function(row){
+      row.addEventListener('click', function(){ goStats(this.dataset.pname); });
+    });
+    if(me){
+      var myRow = body.querySelector('.lbrow-me');
+      if(myRow) setTimeout(function(){ myRow.scrollIntoView({block:'nearest',behavior:'smooth'}); }, 200);
+    }
+    dbg.timeEnd('renderLb');
+    return;
+  }
+
+  // ══ STANDARD SINGLE BOARD — for coaches, parents, asst coaches ══
+  var pl = lbGroup==='all' ? allPl : allPl.filter(function(p){ return p.group===lbGroup; });
+  sortPlayers(pl);
+  if(subtitle){
+    subtitle.textContent = 'Off-season standings' + (lbGroup==='all' ? '' : ' — '+(GROUPS[lbGroup]?GROUPS[lbGroup].label:lbGroup));
+  }
+  if(!pl.length){
+    var grpName = lbGroup==='all' ? '' : ' in '+grpLabel(lbGroup);
+    body.innerHTML='<div class="es"><div class="ei">🏆</div><p>No logs yet'+grpName+'. Be first!</p></div>'; return;
+  }
+  var meIdx = -1;
+  if(me) pl.forEach(function(p,i){ if(p.name.toLowerCase()===me) meIdx=i; });
+
+  var oldRanks = computeOldRanks(lbGroup==='all' ? null : lbGroup);
+
   var TOP_N = 5;
   var visibleIdxs = {};
   for(var vi=0; vi<Math.min(TOP_N, pl.length); vi++) visibleIdxs[vi] = true;
-
   if(meIdx >= 0){
-    // Always show: 1 above me, me, 1 below me
     if(meIdx > 0) visibleIdxs[meIdx-1] = true;
     visibleIdxs[meIdx] = true;
     if(meIdx < pl.length-1) visibleIdxs[meIdx+1] = true;
@@ -2514,41 +2617,17 @@ function renderLb(){
   var idxList = Object.keys(visibleIdxs).map(Number).sort(function(a,b){return a-b;});
   var prevIdx = -1;
   idxList.forEach(function(idx){
-    if(prevIdx >= 0 && idx > prevIdx+1){
-      html += '<div class="lb-ellipsis">· · ·</div>';
-    }
-    html += buildRow(pl[idx], idx);
+    if(prevIdx >= 0 && idx > prevIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
+    html += buildRow(pl[idx], idx, oldRanks, lbGroup==='all');
     prevIdx = idx;
   });
   if(pl.length > TOP_N){
     html += '<div class="lb-total-count">'+pl.length+' players total</div>';
   }
-
-  // ── Weekly Jumpers (Most Improved) ──
-  if(oldLogs.length > 0 && pl.length > 2){
-    var jumpers = pl.map(function(p,i){
-      var key = p.name.toLowerCase();
-      if(!(key in oldRanks)) return null; // new players excluded
-      var diff = oldRanks[key] - i;
-      return diff > 0 ? { name:p.name, from:oldRanks[key]+1, to:i+1, delta:diff } : null;
-    }).filter(Boolean).sort(function(a,b){ return b.delta - a.delta; }).slice(0,3);
-
-    if(jumpers.length > 0){
-      html += '<div class="lb-jumpers">'
-        +'<div class="lb-jumpers-title">🚀 Weekly Jumpers</div>';
-      jumpers.forEach(function(j,i){
-        html += '<div class="lb-jumper-row">'
-          +'<div class="lb-jumper-rank">'+(i+1)+'</div>'
-          +'<div class="lb-jumper-name">'+escapeHtml(j.name)+'</div>'
-          +'<div class="lb-jumper-delta">▲'+j.delta+'</div>'
-          +'</div>';
-      });
-      html += '</div>';
-    }
-  }
+  html += buildJumpers(pl, oldRanks);
 
   body.innerHTML = html;
-  document.querySelectorAll('.lbrow').forEach(function(row){
+  body.querySelectorAll('.lbrow').forEach(function(row){
     row.addEventListener('click', function(){ goStats(this.dataset.pname); });
   });
   if(me){
@@ -3475,21 +3554,12 @@ function submitShirtSize(){
 }
 
 function sendAwardEmail(playerName, rewardName, rewardEmoji, shirtSize){
-  var subject = encodeURIComponent(rewardEmoji + ' Award Earned: ' + rewardName + ' — ' + playerName);
-  var body = encodeURIComponent(
-    'A player just unlocked a reward!\n\n' +
-    'Player: ' + playerName + '\n' +
-    'Award: ' + rewardName + '\n' +
-    'Shirt Size: ' + shirtSize + '\n' +
-    'Date: ' + new Date().toLocaleDateString() + '\n\n' +
-    '— Hoop N\' Hustle App'
-  );
-  var link = document.createElement('a');
-  link.href = 'mailto:jacob.panico@centrallocal.org?subject=' + subject + '&body=' + body;
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  SB.rpc('send_award_email', {
+    player_name: playerName,
+    reward_name: rewardName,
+    reward_emoji: rewardEmoji,
+    shirt_size: shirtSize
+  });
 }
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
