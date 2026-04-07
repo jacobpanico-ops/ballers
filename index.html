@@ -1831,7 +1831,7 @@ window.addEventListener('load', function(){
     dbg.log('init', 'OFFLINE mode — loading from cache');
     document.getElementById('offline-banner').classList.add('on');
     var cached = cLoad(true); // load without expiry
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__'; }); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__'; }); }
     loadAnnounceFallback(); showAnnouncement();
     loadBonusFallback(); buildActs();
     renderLb(); hideLb();
@@ -1840,7 +1840,7 @@ window.addEventListener('load', function(){
     // ── ONLINE MODE ──
     dbg.log('init', 'ONLINE mode — fetching from Supabase');
     var cached = cLoad();
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__'; }); renderLb(); hideLb(); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__AWARD_EMAIL__'; }); renderLb(); hideLb(); }
 
     fetchLogs().then(function(){
       buildRoster(); // rebuild dropdown with logged players
@@ -2097,7 +2097,7 @@ async function fetchLogs(){
     if(batch.length < batchSize) done = true;
     else from += batchSize;
   }
-  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__'; }); invalidateAggCache(); cSave(logs);
+  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__'; }); invalidateAggCache(); cSave(logs);
   dbg.timeEnd('fetchLogs');
   dbg.log('fetch', 'Loaded '+logs.length+' logs ('+all.length+' raw)');
 }
