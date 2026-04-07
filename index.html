@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Hoop N' Hustle">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://mljtsktkvztrqprfncwp.supabase.co wss://mljtsktkvztrqprfncwp.supabase.co; img-src 'self' data:;">
 <title>Hoop N' Hustle — Fairview Apaches</title>
 <link rel="apple-touch-icon" href="image_9e76e3e3.png">
 <link rel="icon" type="image/png" href="image_9e76e3e3.png">
@@ -2741,17 +2742,10 @@ function openEditPlayer(name){
 
 async function changePlayerGroup(name, newGroup){
   if(!newGroup){ toast('Select a group'); return; }
-  // 1. Update all activity logs for this player
-  var res = await SB.from('logs').update({group:newGroup}).eq('name',name).neq('name','__PROFILE__').neq('name','__CONSENT__');
-  if(res.error){ toast('Failed to update logs'); return; }
-  // 2. Update the __PROFILE__ row's group field
-  var profRes = await SB.from('logs').select('id,group').eq('name','__PROFILE__').ilike('acts',name);
-  if(profRes.data && profRes.data.length){
-    var oldGrp = profRes.data[0].group || '';
-    var parts = oldGrp.split('|'); parts[0] = newGroup;
-    await SB.from('logs').update({group:parts.join('|')}).eq('id',profRes.data[0].id);
-  }
-  // 3. Update local logs
+  if(!coachOn || !coachPin){ toast('Coach access required'); return; }
+  var res = await SB.rpc('coach_change_group', {pin_attempt:coachPin, player_name:name, new_group:newGroup});
+  if(res.error || res.data===false){ toast('Failed to update group'+(res.data===false?' — bad PIN':'')); return; }
+  // Update local logs
   logs.forEach(function(l){ if(l.name.toLowerCase()===name.toLowerCase()) l.group=newGroup; });
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
   toast(name+' moved to '+grpLabel(newGroup)+' ✅');
@@ -3229,16 +3223,14 @@ function confirmParentalConsent(){
   err.textContent='';
   if(!_pendingPlayer) return;
 
-  // Store consent in Supabase
+  // Store consent in Supabase via server-validated RPC
   var today = new Date().toISOString().slice(0,10);
-  SB.from('logs').insert([{
-    name: '__CONSENT__',
-    date: today,
-    acts: _pendingPlayer.name,
-    pts: 0, makes: 0,
-    group: parentName + '|' + _pendingPlayer.group,
-    ts: Date.now()
-  }]);
+  SB.rpc('player_insert_consent', {
+    player_name: _pendingPlayer.name,
+    parent_name: parentName,
+    consent_group: _pendingPlayer.group,
+    consent_date: today
+  });
 
   // Complete the sign-in
   var p = _pendingPlayer;
@@ -3421,7 +3413,7 @@ function openAwardBonusModal(){
   aggPlayers(logs).forEach(function(p){ names[p.name.toLowerCase()] = p.name; });
   var list = Object.values(names).sort();
   sel.innerHTML = list.length
-    ? list.map(function(n){ return '<option value="'+escapeAttr(n)+'">'+n+'</option>'; }).join('')
+    ? list.map(function(n){ return '<option value="'+escapeAttr(n)+'">'+escapeHtml(n)+'</option>'; }).join('')
     : '<option value="">— No players yet —</option>';
   document.getElementById('award-reason').value = '';
   document.getElementById('award-pts-sel').value = '10';
@@ -3944,12 +3936,12 @@ function trackPageView(page){
   var key = page+'|'+p.name+'|'+today;
   if(_trackCache[key]) return; // max 1 per page per user per day
   _trackCache[key] = true;
-  SB.from('logs').insert([{
-    name:'__TRACK__', date:today,
-    acts: page, pts:0, makes:0,
-    group: userType+'|'+p.name,
-    ts: Date.now()
-  }]);
+  SB.rpc('player_insert_track', {
+    track_page: page,
+    track_user_type: userType,
+    track_user_name: p.name,
+    track_date: today
+  });
 }
 
 async function fetchTrackingData(){
