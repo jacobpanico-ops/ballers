@@ -1362,7 +1362,7 @@ var SB = supabase.createClient(
 );
 // PIN is now verified server-side via Supabase RPC — never stored in client code
 // App version — bump this on each deploy to force client refresh
-var APP_VERSION = '5.5.0';
+var APP_VERSION = '5.5.1';
 async function verifyPin(attempt){
   var res = await SB.rpc('verify_coach_pin', { pin_attempt: attempt });
   if(res.error) return false;
@@ -2420,7 +2420,7 @@ function renderLb(){
     var s = streakMap[p.name.toLowerCase()] || 0;
     if(s < 3) return '';
     return ' <span style="font-size:13px;vertical-align:middle;" title="'+s+'-day streak">🔥'+
-      (s >= 5 ? '<span style="font-family:var(--font-display);font-size:10px;font-weight:900;color:#FF6A00;vertical-align:middle;">'+s+'</span>' : '')+
+      '<span style="font-family:var(--font-display);font-size:10px;font-weight:900;color:#FF6A00;vertical-align:middle;">'+s+'</span>'+
       '</span>';
   }
 
@@ -2559,23 +2559,9 @@ function renderLb(){
     if(!grpPl.length){
       html += '<div class="es"><div class="ei">🏆</div><p>No '+grpLabel(playerGroup)+' logs yet. Be first!</p></div>';
     } else {
-      var GRP_TOP = 5;
-      var grpVisibleIdxs = {};
-      for(var gi=0; gi<Math.min(GRP_TOP, grpPl.length); gi++) grpVisibleIdxs[gi] = true;
-      if(meGrpIdx >= 0){
-        if(meGrpIdx > 0) grpVisibleIdxs[meGrpIdx-1] = true;
-        grpVisibleIdxs[meGrpIdx] = true;
-        if(meGrpIdx < grpPl.length-1) grpVisibleIdxs[meGrpIdx+1] = true;
-      }
-      var grpIdxList = Object.keys(grpVisibleIdxs).map(Number).sort(function(a,b){return a-b;});
-      var prevGrpIdx = -1;
-      grpIdxList.forEach(function(idx){
-        if(prevGrpIdx >= 0 && idx > prevGrpIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
-        html += buildRow(grpPl[idx], idx, grpOldRanks, false);
-        prevGrpIdx = idx;
-      });
-      if(grpPl.length > GRP_TOP){
-        html += '<div class="lb-total-count">'+grpPl.length+' '+grpLabel(playerGroup)+' players</div>';
+      // Show ALL group players
+      for(var gi=0; gi<grpPl.length; gi++){
+        html += buildRow(grpPl[gi], gi, grpOldRanks, false);
       }
       html += buildJumpers(grpPl, grpOldRanks);
     }
@@ -2607,25 +2593,32 @@ function renderLb(){
 
   var oldRanks = computeOldRanks(lbGroup==='all' ? null : lbGroup);
 
-  var TOP_N = 5;
-  var visibleIdxs = {};
-  for(var vi=0; vi<Math.min(TOP_N, pl.length); vi++) visibleIdxs[vi] = true;
-  if(meIdx >= 0){
-    if(meIdx > 0) visibleIdxs[meIdx-1] = true;
-    visibleIdxs[meIdx] = true;
-    if(meIdx < pl.length-1) visibleIdxs[meIdx+1] = true;
-  }
-
   var html = '';
-  var idxList = Object.keys(visibleIdxs).map(Number).sort(function(a,b){return a-b;});
-  var prevIdx = -1;
-  idxList.forEach(function(idx){
-    if(prevIdx >= 0 && idx > prevIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
-    html += buildRow(pl[idx], idx, oldRanks, lbGroup==='all');
-    prevIdx = idx;
-  });
-  if(pl.length > TOP_N){
-    html += '<div class="lb-total-count">'+pl.length+' players total</div>';
+  if(lbGroup==='all'){
+    // ALL board: top 10 with neighborhood viewing
+    var TOP_N = 10;
+    var visibleIdxs = {};
+    for(var vi=0; vi<Math.min(TOP_N, pl.length); vi++) visibleIdxs[vi] = true;
+    if(meIdx >= 0){
+      if(meIdx > 0) visibleIdxs[meIdx-1] = true;
+      visibleIdxs[meIdx] = true;
+      if(meIdx < pl.length-1) visibleIdxs[meIdx+1] = true;
+    }
+    var idxList = Object.keys(visibleIdxs).map(Number).sort(function(a,b){return a-b;});
+    var prevIdx = -1;
+    idxList.forEach(function(idx){
+      if(prevIdx >= 0 && idx > prevIdx+1) html += '<div class="lb-ellipsis">· · ·</div>';
+      html += buildRow(pl[idx], idx, oldRanks, true);
+      prevIdx = idx;
+    });
+    if(pl.length > TOP_N){
+      html += '<div class="lb-total-count">'+pl.length+' players total</div>';
+    }
+  } else {
+    // Group board: show ALL players
+    for(var gi=0; gi<pl.length; gi++){
+      html += buildRow(pl[gi], gi, oldRanks, false);
+    }
   }
   html += buildJumpers(pl, oldRanks);
 
