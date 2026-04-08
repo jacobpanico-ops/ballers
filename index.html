@@ -547,6 +547,20 @@ select.inp { cursor: pointer; }
 .bonus-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; font-style: italic; color: var(--gold); text-transform: uppercase; }
 .bonus-multi { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold); }
 
+/* ═══ CHALLENGE ═══ */
+.chal-card { background: linear-gradient(135deg, rgba(74,222,128,0.12), rgba(34,197,94,0.05)); border: 2px solid rgba(74,222,128,0.35); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; position: relative; overflow: hidden; }
+.chal-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 200%; height: 100%; background: linear-gradient(90deg, transparent, rgba(74,222,128,0.06), transparent); animation: announce-shine 4s ease-in-out infinite; pointer-events: none; }
+.chal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.chal-icon { font-size: 24px; }
+.chal-title { font-family: var(--font-display); font-size: 16px; font-weight: 800; font-style: italic; color: #4ADE80; text-transform: uppercase; letter-spacing: 0.5px; }
+.chal-desc { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+.chal-progress-wrap { background: rgba(0,0,0,0.3); border-radius: 10px; height: 20px; overflow: hidden; position: relative; }
+.chal-progress-bar { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #22C55E, #4ADE80); transition: width 0.6s ease; min-width: 0; }
+.chal-progress-bar.complete { background: linear-gradient(90deg, #FFB800, #FFCB05); }
+.chal-progress-label { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.chal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+.chal-complete-tag { font-family: var(--font-display); font-size: 12px; font-weight: 800; color: #FFB800; text-transform: uppercase; letter-spacing: 1px; }
+
 /* ═══ SPLASH ═══ */
 .sp { position: fixed; inset: 0; background: rgba(2,2,2,0.97); z-index: 400; display: flex; flex-direction: column; align-items: center; padding: 24px 24px 40px; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .sp::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(255,180,0,0.15), rgba(200,150,12,0.08) 40%, transparent 70%); pointer-events: none; z-index: -1; }
@@ -993,6 +1007,7 @@ select.inp { cursor: pointer; }
     <div id="date-ok-msg" class="date-ok">✅ Date accepted.</div>
   </div>
   <div id="active-bonus-display" style="display:none"></div>
+  <div id="active-challenge-display" style="display:none"></div>
   <div class="card">
     <div class="ct">Activities</div>
     <div class="ag" id="act-grid"></div>
@@ -1046,6 +1061,7 @@ select.inp { cursor: pointer; }
     <button class="tp" id="lb-makes-btn">Makes</button>
     <button class="tp" id="lb-sess-btn">Sessions</button>
   </div>
+  <div id="lb-challenge-display" style="display:none"></div>
   <div id="lb-body"></div>
 </div>
 
@@ -1142,6 +1158,29 @@ select.inp { cursor: pointer; }
     <div class="modal-btns">
       <button class="btn btn-dim btn-sm" style="flex:1" id="bonus-cancel-btn">Cancel</button>
       <button class="btn btn-blue btn-sm" style="flex:1" id="bonus-save-btn">Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHALLENGE MODAL -->
+<div class="modal" id="challenge-modal">
+  <div class="modal-box">
+    <div class="modal-title">🎯 Weekly Challenge</div>
+    <div class="modal-sub">Set a goal for the whole program to chase.</div>
+    <div class="modal-row"><label class="modal-lbl">Challenge Name</label><input class="inp" id="chal-title" type="text" placeholder="e.g. 5-Day Warrior 💪" maxlength="60"></div>
+    <div class="modal-row"><label class="modal-lbl">Goal Type</label>
+      <select class="inp" id="chal-type">
+        <option value="days">Days Logged</option>
+        <option value="points">Points Earned</option>
+        <option value="makes">Total Makes</option>
+      </select>
+    </div>
+    <div class="modal-row"><label class="modal-lbl">Target</label><input class="inp" id="chal-target" type="number" min="1" max="9999" placeholder="e.g. 5"></div>
+    <div class="modal-row"><label class="modal-lbl">Start Date</label><input class="inp" id="chal-start" type="date"></div>
+    <div class="modal-row"><label class="modal-lbl">End Date</label><input class="inp" id="chal-end" type="date"></div>
+    <div class="modal-btns">
+      <button class="btn btn-dim btn-sm" style="flex:1" id="chal-cancel-btn">Cancel</button>
+      <button class="btn btn-blue btn-sm" style="flex:1" id="chal-save-btn">Activate</button>
     </div>
   </div>
 </div>
@@ -1362,7 +1401,7 @@ var SB = supabase.createClient(
 );
 // PIN is now verified server-side via Supabase RPC — never stored in client code
 // App version — bump this on each deploy to force client refresh
-var APP_VERSION = '5.5.1';
+var APP_VERSION = '5.6.0';
 async function verifyPin(attempt){
   var res = await SB.rpc('verify_coach_pin', { pin_attempt: attempt });
   if(res.error) return false;
@@ -1631,6 +1670,7 @@ function getNewBadges(name, ptsEarned){
 var actSel = {}, ctrs = {}, makes = 0, lbMode = 'pts', lbGroup = 'all';
 var coachOn = false, coachModeOn = false, coachPin = '', logs = [];
 var bonusEvent = null;
+var challengeEvent = null;
 var announcement = '';
 
 var GROUPS = {
@@ -1831,16 +1871,17 @@ window.addEventListener('load', function(){
     dbg.log('init', 'OFFLINE mode — loading from cache');
     document.getElementById('offline-banner').classList.add('on');
     var cached = cLoad(true); // load without expiry
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__'; }); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__' && l.name !== '__CHALLENGE__'; }); }
     loadAnnounceFallback(); showAnnouncement();
     loadBonusFallback(); buildActs();
+    loadChallengeFallback(); renderChallengeDisplays();
     renderLb(); hideLb();
     if(coachOn) renderCoach();
   } else {
     // ── ONLINE MODE ──
     dbg.log('init', 'ONLINE mode — fetching from Supabase');
     var cached = cLoad();
-    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__AWARD_EMAIL__'; }); renderLb(); hideLb(); }
+    if(cached){ logs = cached.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__AWARD_EMAIL__' && l.name !== '__CHALLENGE__'; }); renderLb(); hideLb(); }
 
     fetchLogs().then(function(){
       buildRoster(); // rebuild dropdown with logged players
@@ -1851,6 +1892,7 @@ window.addEventListener('load', function(){
 
     loadAnnounceFromDB();
     loadBonusFromDB();
+    loadChallengeFromDB();
     syncOfflineQueue();
 
     SB.from('logs').select('id').limit(1).then(function(){});
@@ -1863,7 +1905,7 @@ window.addEventListener('load', function(){
     if(_realtimeTimer) clearTimeout(_realtimeTimer);
     _realtimeTimer = setTimeout(function(){
       _rIC(function(){
-        renderLb();
+        renderLb(); renderChallengeDisplays();
         if(coachOn) renderCoach();
         if(_statsPlayer) renderStats();
       });
@@ -1874,6 +1916,7 @@ window.addEventListener('load', function(){
     SB.channel('hhc').on('postgres_changes',{event:'INSERT',schema:'public',table:'logs'},function(payload){
       if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.new.name==='__CHALLENGE__'){ try{challengeEvent=JSON.parse(payload.new.acts);}catch(e){challengeEvent=null;} saveChallengeFallback(); renderChallengeDisplays(); if(coachOn)renderCoach(); return; }
       if(payload.new.name==='__TRACK__' || payload.new.name==='__PROFILE__') return;
       var isDupe = logs.some(function(l){ return l.ts === payload.new.ts && l.name === payload.new.name && l.date === payload.new.date; });
       if(!isDupe){ logs.push(payload.new); } else {
@@ -1885,6 +1928,7 @@ window.addEventListener('load', function(){
     }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'logs'},function(payload){
       if(payload.new.name==='__ANNOUNCE__'){ announcement=payload.new.acts||''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.new.name==='__BONUS__'){ try{bonusEvent=JSON.parse(payload.new.acts);}catch(e){bonusEvent=null;} saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.new.name==='__CHALLENGE__'){ try{challengeEvent=JSON.parse(payload.new.acts);}catch(e){challengeEvent=null;} saveChallengeFallback(); renderChallengeDisplays(); if(coachOn)renderCoach(); return; }
       if(payload.new.name==='__TRACK__' || payload.new.name==='__PROFILE__') return;
       var idx = logs.findIndex(function(l){ return l.id===payload.new.id; });
       if(idx>=0) logs[idx] = payload.new; else logs.push(payload.new);
@@ -1893,6 +1937,7 @@ window.addEventListener('load', function(){
     }).on('postgres_changes',{event:'DELETE',schema:'public',table:'logs'},function(payload){
       if(payload.old.name==='__ANNOUNCE__'){ announcement=''; saveAnnounceFallback(); showAnnouncement(); return; }
       if(payload.old.name==='__BONUS__'){ bonusEvent=null; saveBonusFallback(); buildActs(); if(coachOn)renderCoach(); return; }
+      if(payload.old.name==='__CHALLENGE__'){ challengeEvent=null; saveChallengeFallback(); renderChallengeDisplays(); if(coachOn)renderCoach(); return; }
       if(payload.old.name==='__TRACK__' || payload.old.name==='__PROFILE__') return;
       logs = logs.filter(function(l){ return l.id!==payload.old.id; });
       invalidateAggCache(); cSave(logs);
@@ -1911,6 +1956,7 @@ window.addEventListener('load', function(){
       fetchLogs().then(function(){ buildRoster(); renderLb(); if(coachOn) renderCoach(); });
       loadAnnounceFromDB();
       loadBonusFromDB();
+      loadChallengeFromDB();
     });
   });
   window.addEventListener('offline', function(){
@@ -1991,6 +2037,10 @@ function wireEvents(){
   // Bonus modal
   document.getElementById('bonus-cancel-btn').addEventListener('click', function(){ closeModal('bonus-modal'); });
   document.getElementById('bonus-save-btn').addEventListener('click', saveBonusEvent);
+
+  // Challenge modal
+  document.getElementById('chal-cancel-btn').addEventListener('click', function(){ closeModal('challenge-modal'); });
+  document.getElementById('chal-save-btn').addEventListener('click', saveChallengeEvent);
 
   // Announce modal
   document.getElementById('announce-clear-btn').addEventListener('click', clearAnnounce);
@@ -2100,7 +2150,7 @@ async function fetchLogs(){
     if(batch.length < batchSize) done = true;
     else from += batchSize;
   }
-  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__'; }); invalidateAggCache(); cSave(logs);
+  logs = all.filter(function(l){ return l.name !== '__ANNOUNCE__' && l.name !== '__BONUS__' && l.name !== '__TRACK__' && l.name !== '__PROFILE__' && l.name !== '__CONSENT__' && l.name !== '__AWARD_EMAIL__' && l.name !== '__CHALLENGE__'; }); invalidateAggCache(); cSave(logs);
   dbg.timeEnd('fetchLogs');
   dbg.log('fetch', 'Loaded '+logs.length+' logs ('+all.length+' raw)');
 }
@@ -2265,7 +2315,7 @@ async function submitLog(){
   document.getElementById('makes-disp').textContent = '0';
   document.querySelectorAll('.ab').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('ctr-card').style.display = 'none';
-  calcPts(); setupDate(); renderLb();
+  calcPts(); setupDate(); renderLb(); renderChallengeDisplays();
   if(coachOn) renderCoach();
   if(coachModeOn){ toast('Logged for '+name+' ✅'); }
   else { showSplash(name, pts); }
@@ -2714,6 +2764,20 @@ function renderCoach(){
   }
   bonusHtml += '</div>';
 
+  var chalHtml = '<div class="card"><div class="ct">🎯 Challenge</div>';
+  if(challengeEvent){
+    var completions = getChallengeCompletions();
+    chalHtml += buildChallengeCardHtml(null, true);
+    chalHtml += '<div style="margin-top:10px;font-size:12px;color:var(--text-dim);">'+completions.length+' player'+(completions.length!==1?'s':'')+' completed';
+    if(completions.length > 0) chalHtml += ': '+completions.map(function(n){ return escapeHtml(n); }).join(', ');
+    chalHtml += '</div>';
+    chalHtml += '<button class="btn btn-red btn-sm" style="margin-top:10px" id="clear-challenge-btn">Remove Challenge</button>';
+  } else {
+    chalHtml += '<div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">No active challenge.</div>'
+      +'<button class="btn btn-blue btn-sm" id="open-challenge-btn">Set Challenge</button>';
+  }
+  chalHtml += '</div>';
+
   var feedHtml = '<div class="card"><div class="ct">📅 Today\'s Activity — '+fmtDate(today)+'</div>';
   if(!ROSTER.length){ feedHtml += '<div style="color:var(--text-muted);font-size:13px;">No roster players. Add some below.</div>'; }
   else {
@@ -2747,7 +2811,7 @@ function renderCoach(){
 
   var presenceHtml = '<div class="card"><div class="ct">👁️ Currently Viewing</div><div id="presence-viewers"><div style="color:var(--text-muted);font-size:13px;">Checking...</div></div></div>';
 
-  body.innerHTML = presenceHtml+announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Directory</span></div><div class="card" id="coach-directory"></div><div class="sec-div"><span>Actions</span></div>'+actHtml;
+  body.innerHTML = presenceHtml+announceHtml+bonusHtml+chalHtml+feedHtml+'<div class="sec-div"><span>Directory</span></div><div class="card" id="coach-directory"></div><div class="sec-div"><span>Actions</span></div>'+actHtml;
 
   // Populate presence card
   renderPresenceCard();
@@ -2766,6 +2830,10 @@ function renderCoach(){
   if(ob) ob.addEventListener('click', openBonusModal);
   var cb = document.getElementById('clear-bonus-btn');
   if(cb) cb.addEventListener('click', clearBonus);
+  var ocb = document.getElementById('open-challenge-btn');
+  if(ocb) ocb.addEventListener('click', openChallengeModal);
+  var ccb = document.getElementById('clear-challenge-btn');
+  if(ccb) ccb.addEventListener('click', clearChallenge);
 
   var goAn = document.getElementById('go-analytics-btn');
   if(goAn) goAn.addEventListener('click', function(){ goPage('analytics', document.getElementById('nav-analytics')); });
@@ -2954,6 +3022,153 @@ async function loadBonusFromDB(){
   } else { bonusEvent = null; }
   saveBonusFallback();
   buildActs();
+}
+
+// ████████████████████████████████████████████████████████████████████████
+// §15b CHALLENGES — Weekly/monthly player challenges
+// ████████████████████████████████████████████████████████████████████████
+var _CHALLENGE_KEY = '__CHALLENGE__';
+
+function saveChallengeFallback(){ safeSave('hhc_challenge_fb', JSON.stringify(challengeEvent)); }
+function loadChallengeFallback(){ try{ challengeEvent = JSON.parse(localStorage.getItem('hhc_challenge_fb')||'null'); }catch(e){} }
+
+function openChallengeModal(){
+  var today = new Date().toISOString().slice(0,10);
+  var nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate()+7);
+  document.getElementById('chal-title').value = '';
+  document.getElementById('chal-type').value = 'days';
+  document.getElementById('chal-target').value = '';
+  document.getElementById('chal-start').value = today;
+  document.getElementById('chal-end').value = nextWeek.toISOString().slice(0,10);
+  openModal('challenge-modal');
+}
+
+async function saveChallengeEvent(){
+  var title = document.getElementById('chal-title').value.trim();
+  var type = document.getElementById('chal-type').value;
+  var target = parseInt(document.getElementById('chal-target').value)||0;
+  var startDate = document.getElementById('chal-start').value;
+  var endDate = document.getElementById('chal-end').value;
+  if(!title){ toast('Enter a challenge name'); return; }
+  if(title.length > 60) title = title.substring(0, 60);
+  if(['days','points','makes'].indexOf(type) < 0){ toast('Invalid goal type'); return; }
+  if(target < 1 || target > 9999){ toast('Target must be 1–9999'); return; }
+  if(!startDate || !endDate || endDate < startDate){ toast('Check your dates'); return; }
+  challengeEvent = { title:title, type:type, target:target, startDate:startDate, endDate:endDate };
+  var btn = document.getElementById('chal-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  var res = await SB.rpc('coach_save_challenge', { pin_attempt:coachPin, challenge_json:JSON.stringify(challengeEvent) });
+  if(res.error || res.data===false){ toast('Challenge save failed'); btn.disabled=false; btn.textContent='Activate'; return; }
+  btn.disabled = false; btn.textContent = 'Activate';
+  saveChallengeFallback();
+  closeModal('challenge-modal'); renderCoach(); renderChallengeDisplays();
+  toast('Challenge activated 🎯');
+}
+
+async function clearChallenge(){
+  challengeEvent = null;
+  await SB.rpc('coach_clear_challenge', { pin_attempt:coachPin });
+  saveChallengeFallback(); renderCoach(); renderChallengeDisplays();
+  toast('Challenge cleared');
+}
+
+async function loadChallengeFromDB(){
+  var res = await SB.from('logs').select('acts').eq('name', _CHALLENGE_KEY).order('ts',{ascending:false}).limit(1);
+  if(res.data && res.data.length > 0){
+    try {
+      var c = JSON.parse(res.data[0].acts);
+      var today = new Date().toISOString().slice(0,10);
+      if(!c.endDate || c.endDate >= today){ challengeEvent = c; }
+      else { challengeEvent = null; }
+    } catch(e){ challengeEvent = null; }
+  } else { challengeEvent = null; }
+  saveChallengeFallback();
+  renderChallengeDisplays();
+}
+
+function getChallengeProgress(playerName){
+  if(!challengeEvent || !playerName) return { current:0, target:0, pct:0, done:false };
+  var c = challengeEvent;
+  var pLogs = logs.filter(function(l){
+    return l.name.toLowerCase()===playerName.toLowerCase() && l.date >= c.startDate && l.date <= c.endDate;
+  });
+  var current = 0;
+  if(c.type==='days'){
+    var dates = {};
+    pLogs.forEach(function(l){ if(l.date) dates[l.date]=true; });
+    current = Object.keys(dates).length;
+  } else if(c.type==='points'){
+    pLogs.forEach(function(l){ current += (parseInt(l.pts)||0); });
+  } else if(c.type==='makes'){
+    pLogs.forEach(function(l){ current += (parseInt(l.makes)||0); });
+  }
+  var target = c.target||1;
+  var pct = Math.min(100, Math.round((current/target)*100));
+  return { current:current, target:target, pct:pct, done:current>=target };
+}
+
+function getChallengeCompletions(){
+  if(!challengeEvent) return [];
+  var pl = aggPlayers(logs);
+  var completions = [];
+  pl.forEach(function(p){
+    var prog = getChallengeProgress(p.name);
+    if(prog.done) completions.push(p.name);
+  });
+  return completions;
+}
+
+function challengeTypeLabel(type){
+  if(type==='days') return 'days logged';
+  if(type==='points') return 'points earned';
+  if(type==='makes') return 'total makes';
+  return type;
+}
+
+function buildChallengeCardHtml(progress, showFooter){
+  if(!challengeEvent) return '';
+  var c = challengeEvent;
+  var barClass = progress && progress.done ? 'chal-progress-bar complete' : 'chal-progress-bar';
+  var progressHtml = '';
+  if(progress){
+    progressHtml = '<div class="chal-progress-wrap"><div class="'+barClass+'" style="width:'+progress.pct+'%"></div>'
+      +'<div class="chal-progress-label">'+progress.current+' / '+progress.target+'</div></div>';
+    if(progress.done) progressHtml += '<div style="text-align:center;margin-top:6px;"><span class="chal-complete-tag">✅ Challenge Complete!</span></div>';
+  }
+  var footer = '';
+  if(showFooter){
+    var daysLeft = Math.max(0, Math.ceil((new Date(c.endDate+'T23:59:59') - new Date()) / 86400000));
+    footer = '<div class="chal-footer"><span>'+fmtDate(c.startDate)+' → '+fmtDate(c.endDate)+'</span><span>'+daysLeft+' day'+(daysLeft!==1?'s':'')+' left</span></div>';
+  }
+  return '<div class="chal-card"><div class="chal-header"><div class="chal-icon">🎯</div>'
+    +'<div><div class="chal-title">'+escapeHtml(c.title)+'</div></div></div>'
+    +'<div class="chal-desc">Goal: '+c.target+' '+challengeTypeLabel(c.type)+' by '+fmtDate(c.endDate)+'</div>'
+    +progressHtml+footer+'</div>';
+}
+
+function renderChallengeDisplays(){
+  // Log page display
+  var logEl = document.getElementById('active-challenge-display');
+  if(logEl){
+    if(challengeEvent){
+      var p = pLoad();
+      var name = (p && !p.isCoach && !p.isParent && !p.isAsstCoach) ? p.name : null;
+      var prog = name ? getChallengeProgress(name) : null;
+      logEl.style.display = 'block';
+      logEl.innerHTML = buildChallengeCardHtml(prog, true);
+    } else { logEl.style.display = 'none'; logEl.innerHTML = ''; }
+  }
+  // Leaderboard display
+  var lbEl = document.getElementById('lb-challenge-display');
+  if(lbEl){
+    if(challengeEvent){
+      var p2 = pLoad();
+      var name2 = (p2 && !p2.isCoach && !p2.isParent && !p2.isAsstCoach) ? p2.name : null;
+      var prog2 = name2 ? getChallengeProgress(name2) : null;
+      lbEl.style.display = 'block';
+      lbEl.innerHTML = buildChallengeCardHtml(prog2, true);
+    } else { lbEl.style.display = 'none'; lbEl.innerHTML = ''; }
+  }
 }
 
 // ████████████████████████████████████████████████████████████████████████
