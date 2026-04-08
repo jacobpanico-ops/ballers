@@ -1362,7 +1362,7 @@ var SB = supabase.createClient(
 );
 // PIN is now verified server-side via Supabase RPC — never stored in client code
 // App version — bump this on each deploy to force client refresh
-var APP_VERSION = '5.4.1';
+var APP_VERSION = '5.5.0';
 async function verifyPin(attempt){
   var res = await SB.rpc('verify_coach_pin', { pin_attempt: attempt });
   if(res.error) return false;
@@ -1899,6 +1899,9 @@ window.addEventListener('load', function(){
       debouncedRealtimeRender();
     }).subscribe();
   }
+
+  // ── Presence channel — track who's viewing the app ──
+  initPresence();
 
   // ── Online/Offline listeners ──
   window.addEventListener('online', function(){
@@ -2749,7 +2752,12 @@ function renderCoach(){
     +'<button class="btn btn-red" id="reset-data-btn">⚠️ Reset All Data (New Season)</button>'
     +'</div>';
 
-  body.innerHTML = announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Directory</span></div><div class="card" id="coach-directory"></div><div class="sec-div"><span>Actions</span></div>'+actHtml;
+  var presenceHtml = '<div class="card"><div class="ct">👁️ Currently Viewing</div><div id="presence-viewers"><div style="color:var(--text-muted);font-size:13px;">Checking...</div></div></div>';
+
+  body.innerHTML = presenceHtml+announceHtml+bonusHtml+feedHtml+'<div class="sec-div"><span>Directory</span></div><div class="card" id="coach-directory"></div><div class="sec-div"><span>Actions</span></div>'+actHtml;
+
+  // Populate presence card
+  renderPresenceCard();
 
   // Load player directory async
   var dirEl = document.getElementById('coach-directory');
@@ -2842,6 +2850,12 @@ async function changePlayerGroup(name, newGroup){
   if(res.error || res.data===false){ toast('Failed to update group'+(res.data===false?' — bad PIN':'')); return; }
   // Update local logs
   logs.forEach(function(l){ if(l.name.toLowerCase()===name.toLowerCase()) l.group=newGroup; });
+  // If the current signed-in player is the one being changed, update their stored session
+  var cp = pLoad();
+  if(cp && cp.name && cp.name.toLowerCase()===name.toLowerCase()){
+    cp.group = newGroup;
+    pSave(cp);
+  }
   invalidateAggCache(); cSave(logs); closeModal('edit-modal'); renderCoach(); renderLb();
   toast(name+' moved to '+grpLabel(newGroup)+' ✅');
 }
@@ -3099,7 +3113,7 @@ async function tryPin(){
   }
   else { p=''; toast('Wrong PIN!'); }
 }
-function lockCoach(){ coachOn=false; coachModeOn=false; coachPin=''; document.getElementById('nav-analytics').classList.remove('show'); document.getElementById('nav-coach').classList.remove('show'); setupDate(); renderCoach(); }
+function lockCoach(){ coachOn=false; coachModeOn=false; coachPin=''; leavePresence(); document.getElementById('nav-analytics').classList.remove('show'); document.getElementById('nav-coach').classList.remove('show'); setupDate(); renderCoach(); }
 function toggleCoachMode(){ coachModeOn=!coachModeOn; setupDate(); renderCoach(); toast(coachModeOn?'Override ON — any date allowed':'Override OFF'); }
 
 async function resetData(){
@@ -3385,6 +3399,7 @@ function applyParent(p){
     var lbBody = document.getElementById('lb-body');
     if(lbBody && lbBody.parentNode) lbBody.parentNode.insertBefore(hint, lbBody);
   }, 300);
+  joinPresence(p.parentName, 'parent', p.playerName||'');
 }
 
 async function doCoachIn(){
@@ -3429,6 +3444,7 @@ function applyAsstCoach(p){
   document.getElementById('lb-group-filter').style.display = 'flex';
   // Go to leaderboard by default
   goPage('lb', document.getElementById('nav-lb'));
+  joinPresence(p.asstCoachName||p.name, 'asstcoach', '');
 }
 
 function applyPlayer(p){
@@ -3453,10 +3469,12 @@ function applyPlayer(p){
     lbGroup = p.group;
     document.getElementById('lb-group-filter').style.display = 'none';
   }
+  joinPresence(p.name, 'player', '');
 }
 
 function enterCoachMode(name){
   coachOn=true; coachModeOn=true; loadRoster();
+  joinPresence(name, 'coach', '');
   // Show leaderboard group filter for coaches
   document.getElementById('lb-group-filter').style.display = 'flex';
   lbGroup = 'all';
@@ -4007,6 +4025,80 @@ function renderAnalytics(){
 
     pvCard.innerHTML = pvHtml;
   });
+}
+
+// ████████████████████████████████████████████████████████████████████████
+// §23a PRESENCE — Track active viewers for coach dashboard
+// ████████████████████████████████████████████████████████████████████████
+var _presenceChannel = null;
+var _presenceState = {}; // {key: [{name, userType, joinedAt}]}
+
+function initPresence(){
+  var p = pLoad();
+  if(!p || !p.name) return;
+  var userType = p.isCoach ? 'coach' : (p.isAsstCoach ? 'asstcoach' : (p.isParent ? 'parent' : 'player'));
+  joinPresence(p.name, userType, p.isParent ? (p.playerName||'') : '');
+}
+
+function joinPresence(name, userType, detail){
+  try {
+    if(_presenceChannel){ SB.removeChannel(_presenceChannel); _presenceChannel=null; }
+    _presenceChannel = SB.channel('hhc-presence', { config: { presence: { key: name.toLowerCase().replace(/\s+/g,'_')+'_'+userType } } });
+    _presenceChannel.on('presence', { event: 'sync' }, function(){
+      _presenceState = _presenceChannel.presenceState();
+      if(coachOn) renderPresenceCard();
+    });
+    _presenceChannel.subscribe(function(status){
+      if(status==='SUBSCRIBED'){
+        _presenceChannel.track({ name: name, userType: userType, detail: detail||'', joinedAt: new Date().toISOString() });
+      }
+    });
+  } catch(e){ console.warn('Presence init error:', e); }
+}
+
+function leavePresence(){
+  try{ if(_presenceChannel){ _presenceChannel.untrack(); SB.removeChannel(_presenceChannel); _presenceChannel=null; } }catch(e){}
+  _presenceState = {};
+}
+
+function getActiveViewers(){
+  var viewers = [];
+  var state = _presenceState;
+  Object.keys(state).forEach(function(key){
+    var arr = state[key];
+    if(arr && arr.length){
+      arr.forEach(function(v){
+        if(v.userType==='parent' || v.userType==='asstcoach'){
+          viewers.push({ name: v.name, userType: v.userType, detail: v.detail||'', joinedAt: v.joinedAt });
+        }
+      });
+    }
+  });
+  // Sort: asst coaches first, then parents, then by name
+  viewers.sort(function(a,b){
+    if(a.userType!==b.userType) return a.userType==='asstcoach'?-1:1;
+    return a.name.localeCompare(b.name);
+  });
+  return viewers;
+}
+
+function renderPresenceCard(){
+  var el = document.getElementById('presence-viewers');
+  if(!el) return;
+  var viewers = getActiveViewers();
+  if(!viewers.length){
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No parents or assistant coaches online right now.</div>';
+    return;
+  }
+  el.innerHTML = viewers.map(function(v){
+    var label = v.userType==='asstcoach' ? 'Asst Coach' : 'Parent';
+    var extra = v.detail ? ' <span style="color:var(--text-muted);font-size:11px;">· watching '+escapeHtml(v.detail)+'</span>' : '';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gold-border);">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:#22C55E;flex-shrink:0;"></div>'
+      +'<div style="flex:1;"><span style="font-weight:600;font-size:13px;">'+escapeHtml(v.name)+'</span>'+extra+'</div>'
+      +'<span class="grp-badge" style="background:rgba(255,203,5,0.12);color:var(--gold-bright);border:1px solid rgba(255,203,5,0.3);font-size:10px;padding:2px 8px;">'+label+'</span>'
+      +'</div>';
+  }).join('');
 }
 
 // ████████████████████████████████████████████████████████████████████████
