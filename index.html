@@ -3767,25 +3767,32 @@ async function saveAwardBonus(){
 // ████████████████████████████████████████████████████████████████████████
 // §19b SHIRT SIZE & AWARD EMAIL
 // ████████████████████████████████████████████████████████████████████████
-function submitShirtSize(){
+async function submitShirtSize(){
   var size = document.getElementById('shirt-size-sel').value;
   if(!size){ toast('Please select a shirt size!'); return; }
   var award = window._pendingAward || {};
   var p = pLoad();
   var playerName = (p && p.name) ? p.name : (award.name || 'Unknown');
-  sendAwardEmail(playerName, award.reward || 'Reward', award.emoji || '🎽', size);
+  var ok = await sendAwardEmail(playerName, award.reward || 'Reward', award.emoji || '🎽', size);
   closeModal('shirt-size-modal');
-  toast('Size submitted! Coach has been notified 📧');
+  if(ok) toast('Size submitted! Coach has been notified 📧');
+  else toast('Size saved but email failed — tell Coach your size directly');
   window._pendingAward = null;
 }
 
-function sendAwardEmail(playerName, rewardName, rewardEmoji, shirtSize){
-  SB.rpc('send_award_email', {
-    player_name: playerName,
-    reward_name: rewardName,
-    reward_emoji: rewardEmoji,
-    shirt_size: shirtSize
-  });
+async function sendAwardEmail(playerName, rewardName, rewardEmoji, shirtSize){
+  try {
+    var res = await SB.rpc('send_award_email', {
+      player_name: playerName,
+      reward_name: rewardName,
+      reward_emoji: rewardEmoji,
+      shirt_size: shirtSize
+    });
+    if(res.error){ dbg.log('award', 'email RPC error', res.error); return false; }
+    if(res.data === false){ dbg.log('award', 'email rejected (validation or rate limit)'); return false; }
+    dbg.log('award', 'email sent', {player:playerName, reward:rewardName, size:shirtSize});
+    return true;
+  } catch(e){ dbg.log('award', 'email exception', e); return false; }
 }
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
